@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import styles from './ConfirmDialog.module.css';
 
 interface ConfirmDialogProps {
@@ -17,7 +18,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>{title}</h3>
@@ -32,6 +33,7 @@ export default function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

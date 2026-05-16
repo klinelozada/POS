@@ -12,7 +12,8 @@ export default function PayFirst() {
   const [unpaidOrder, setUnpaidOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [justPaid, setJustPaid] = useState(false);
-  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [countdown, setCountdown] = useState(5);
+  const justPaidRef = useRef(false);
 
   useEffect(() => {
     const ids = getCustomerOrderIds();
@@ -21,7 +22,7 @@ export default function PayFirst() {
       return;
     }
 
-    Promise.all(ids.map((id) => getOrder(id))).then((results) => {
+    Promise.all(ids.map((id) => getOrder(id).catch(() => null))).then((results) => {
       const valid = results.filter((o): o is Order => o !== null);
       const unpaid = valid.find(
         (o) => o.status !== 'completed' && (o.paymentStatus ?? 'unpaid') === 'unpaid'
@@ -37,27 +38,32 @@ export default function PayFirst() {
     });
   }, [navigate]);
 
-  // Real-time listener: detect when order gets paid → redirect after 3s
+  // Real-time listener: detect when order gets paid
   useEffect(() => {
     if (!unpaidOrder) return;
 
     const unsubscribe = subscribeToOrder(unpaidOrder.id, (order) => {
       if (!order) return;
       const isPaid = order.paymentStatus === 'paid' || order.status === 'completed';
-      if (isPaid && !justPaid) {
+      if (isPaid && !justPaidRef.current) {
+        justPaidRef.current = true;
         setJustPaid(true);
-        setUnpaidOrder(order);
-        redirectTimer.current = setTimeout(() => {
-          navigate(`${base}/welcome`, { replace: true });
-        }, 3000);
       }
     });
 
-    return () => {
-      unsubscribe();
-      if (redirectTimer.current) clearTimeout(redirectTimer.current);
-    };
-  }, [unpaidOrder?.id, base, navigate, justPaid]);
+    return () => unsubscribe();
+  }, [unpaidOrder?.id]);
+
+  // Countdown + redirect after payment detected
+  useEffect(() => {
+    if (!justPaid) return;
+    if (countdown <= 0) {
+      navigate(`${base}/welcome`, { replace: true });
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [justPaid, countdown, base, navigate]);
 
   if (loading || !unpaidOrder) return null;
 
@@ -77,7 +83,7 @@ export default function PayFirst() {
         </div>
         <div className={styles.title}>Payment Received!</div>
         <div className={styles.subtitle}>
-          Thank you! Redirecting you back to the menu...
+          Thank you! Redirecting in {countdown}s...
         </div>
       </div>
     );
