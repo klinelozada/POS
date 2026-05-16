@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useOrders } from '../../hooks/useOrders';
 import { updateOrderItemStatus } from '../../services/orderService';
 import { getMenuItemImage } from '../../utils/menuImages';
@@ -39,6 +39,17 @@ export default function StationCounter({ station, stationLabel }: StationCounter
   }, [selectedOrder, station]);
 
   const selectedItem = selectedItemIndex !== null ? stationItems.find((i) => i.originalIndex === selectedItemIndex) : null;
+
+  // Auto-deselect when selected order has no more pending items for this station
+  useEffect(() => {
+    if (selectedOrderId && selectedOrder) {
+      const pendingItems = selectedOrder.items.filter((item) => item.station === station && !item.isDone);
+      if (pendingItems.length === 0) {
+        setSelectedOrderId(null);
+        setSelectedItemIndex(null);
+      }
+    }
+  }, [selectedOrder, selectedOrderId, station]);
 
   const handleItemDone = useCallback(async (orderId: string, itemIndex: number, isDone: boolean) => {
     try {

@@ -93,6 +93,19 @@ export default function SoloCounter() {
     }
   }, [selectedOrder, panelMode]);
 
+  // Auto-deselect when selected order is completed (all done + paid)
+  useEffect(() => {
+    if (
+      selectedOrder &&
+      panelMode === 'prep' &&
+      selectedOrder.status === 'completed'
+    ) {
+      setSelectedOrderId(null);
+      setPanelMode('prep');
+      setSelectedItemIndex(null);
+    }
+  }, [selectedOrder, panelMode]);
+
   const focusedItem = selectedOrder && selectedItemIndex !== null
     ? selectedOrder.items[selectedItemIndex]
     : null;
@@ -219,6 +232,7 @@ export default function SoloCounter() {
 
   const quickAmounts = selectedOrder
     ? [
+        selectedOrder.total,
         Math.ceil(selectedOrder.total / 50) * 50,
         Math.ceil(selectedOrder.total / 100) * 100,
         Math.ceil(selectedOrder.total / 500) * 500,
