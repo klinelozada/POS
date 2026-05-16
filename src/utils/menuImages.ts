@@ -95,21 +95,26 @@ const imageMap: Record<string, string> = {
  * Maps category names (lowercased) to menu page images for fallback.
  */
 const categoryImageMap: Record<string, string> = {
-  'coffee - hot': '/images/menu-pages/Joe Street Coffee Menu.jpg',
-  'coffee - iced': '/images/menu-pages/Joe Street Coffee Menu.jpg',
-  'chocolates - hot': '/images/menu-pages/Joe Street Chocolate Menu.jpg',
-  'chocolates - iced': '/images/menu-pages/Joe Street Chocolate Menu.jpg',
-  'milk teas - classics': '/images/menu-pages/Joe Street Milk Tea Menu.jpg',
-  'milk teas - mango series': '/images/menu-pages/Joe Street Milk Tea Menu (2).jpg',
-  'milk teas - matcha series': '/images/menu-pages/Joe Street Milk Tea Menu (3).jpg',
-  'mango cloud series': '/images/menu-pages/Joe Street Milk Tea Menu (2).jpg',
-  'street fizz': '/images/menu-pages/6.jpg',
-  'pastas': '/images/menu-pages/8.jpg',
-  'sandwiches': '/images/menu-pages/8.jpg',
-  'noodle corner': '/images/menu-pages/9.jpg',
-  'barkada favorites': '/images/menu-pages/9.jpg',
-  'pitcher': '/images/menu-pages/7.jpg',
-  'street bites': '/images/menu-pages/9.jpg',
+  // Parent categories → full menu page images
+  'coffee': '/menu-image/coffee.jpg',
+  'chocolates': '/menu-image/chocolate.jpg',
+  'milk teas': '/menu-image/milktea.jpg',
+  'street fizz': '/menu-image/street fizz.jpg',
+  'mango cloud series': '/menu-image/milktea.jpg',
+  'pastas': '/menu-image/pasta-sandwich.jpg',
+  'sandwiches': '/menu-image/pasta-sandwich.jpg',
+  'noodle corner': '/menu-image/noodle-corner.jpg',
+  'barkada favorites': '/menu-image/barkada.jpg',
+  'street bites': '/menu-image/street-bites.jpg',
+  // Sub-categories (inherit parent image)
+  'coffee - hot': '/menu-image/coffee.jpg',
+  'coffee - iced': '/menu-image/coffee.jpg',
+  'chocolates - hot': '/menu-image/chocolate.jpg',
+  'chocolates - iced': '/menu-image/chocolate.jpg',
+  'milk teas - classics': '/menu-image/milktea.jpg',
+  'milk teas - mango series': '/menu-image/milktea.jpg',
+  'milk teas - matcha series': '/menu-image/milktea.jpg',
+  'pitcher': '/menu-image/barkada.jpg',
 };
 
 export function getMenuItemImage(name: string): string | undefined {

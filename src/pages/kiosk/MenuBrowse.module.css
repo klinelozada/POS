@@ -142,7 +142,6 @@
 
 .categoryCardImage {
   width: 100%;
-  aspect-ratio: 1;
   background: linear-gradient(135deg, #FFF8F0 0%, #FFE8CC 100%);
   display: flex;
   align-items: center;
@@ -152,20 +151,22 @@
 
 .categoryCardImage img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
 }
 
 .categoryCardIcon {
   color: #D4871C;
   opacity: 0.8;
+  padding: 48px 0;
 }
 
 .categoryCardName {
-  padding: 14px 8px;
+  padding: 12px 8px;
   font-size: 15px;
   font-weight: 700;
   color: var(--color-foreground-primary);
+  background: var(--color-surface-primary);
 }
 
 /* ===== Items Layout ===== */
@@ -438,10 +439,6 @@
   .categoryGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-  }
-
-  .categoryCardImage {
-    aspect-ratio: 1.1;
   }
 
   .categoryCardName {
