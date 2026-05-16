@@ -1,0 +1,41 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.new {
+  background-color: #FFF3E0;
+  color: #E65100;
+}
+
+.preparing {
+  background-color: #E3F2FD;
+  color: #1565C0;
+}
+
+.completed {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.cancelled {
+  background-color: #FDECEA;
+  color: #C62828;
+}
+
+.paid {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.unpaid {
+  background-color: #FFF3E0;
+  color: #E65100;
+}

@@ -1,0 +1,131 @@
+.container {
+  width: 100%;
+  min-height: var(--vh-full);
+  background-color: var(--color-warm-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  gap: 20px;
+  user-select: none;
+}
+
+.icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #FFF0E0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: var(--color-accent-primary);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-foreground-primary);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+.orderCard {
+  width: 100%;
+  max-width: 340px;
+  background: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--color-accent-primary);
+}
+
+.orderHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.orderNumber {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-foreground-primary);
+}
+
+.badgeUnpaid {
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #FFF0E0;
+  color: #E8740C;
+}
+
+.orderTotal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-accent-primary);
+  margin-left: auto;
+}
+
+.orderItems {
+  font-size: 13px;
+  color: var(--color-foreground-secondary);
+  line-height: 1.5;
+}
+
+.payMessage {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent-primary);
+  text-align: center;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--color-foreground-muted);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 260px;
+}
+
+.viewOrdersBtn {
+  width: 100%;
+  max-width: 340px;
+  padding: 14px;
+  background: var(--color-accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.viewOrdersBtn:hover {
+  opacity: 0.9;
+}
+
+.goToCounterLink {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}

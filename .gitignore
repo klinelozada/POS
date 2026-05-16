@@ -27,3 +27,20 @@ dist-ssr
 .env
 .env.local
 .env.production
+
+# Firebase
+.firebase/
+
+# Android build outputs
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+
+# Claude
+.claude/settings.json
+
+# Large binary files (keep in repo for reference but not needed in git)
+*.pdf
+*.pen
+superadmin-portal.webp

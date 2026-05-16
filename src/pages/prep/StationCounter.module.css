@@ -1,0 +1,274 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background: var(--color-surface-secondary);
+}
+
+/* Left column - orders queue */
+.leftCol {
+  width: 256px;
+  background: var(--color-surface-primary);
+  border-right: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.leftHeader {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stationTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+}
+
+.stationBadge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ordersList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.orderCard {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--color-border-subtle);
+  transition: background 0.1s ease;
+}
+
+.orderCard:hover {
+  background: var(--color-surface-secondary);
+}
+
+.orderCardSelected {
+  composes: orderCard;
+  background: var(--color-warm-cream);
+  border-left-color: var(--color-accent-primary);
+}
+
+.orderNum {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+  margin-bottom: 2px;
+}
+
+.orderMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-foreground-secondary);
+}
+
+.orderProgress {
+  font-size: 11px;
+  color: var(--color-foreground-muted);
+  margin-top: 4px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: var(--color-border-subtle);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Middle column - selected order */
+.midCol {
+  width: 384px;
+  background: var(--color-surface-primary);
+  border-right: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.photoPlaceholder {
+  width: 100%;
+  aspect-ratio: 1.5;
+  background: var(--color-warm-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.photoPlaceholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+}
+
+.orderItemsList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.orderItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.orderItem:hover {
+  background: var(--color-surface-secondary);
+}
+
+.orderItemSelected {
+  composes: orderItem;
+  background: var(--color-warm-cream);
+}
+
+.itemCheckbox {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  flex: 1;
+}
+
+.itemName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.itemDone {
+  text-decoration: line-through;
+  color: var(--color-foreground-muted);
+}
+
+.itemVariant {
+  font-size: 12px;
+  color: var(--color-foreground-secondary);
+}
+
+.itemQty {
+  font-size: 13px;
+  color: var(--color-foreground-secondary);
+  font-weight: 500;
+}
+
+/* Right column - instructions */
+.rightCol {
+  flex: 1;
+  background: var(--color-warm-cream);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.instrHeader {
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+}
+
+.instrItemName {
+  padding: 16px 20px 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+}
+
+.instrDesc {
+  padding: 0 20px 16px;
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+  line-height: 1.6;
+}
+
+.instrSteps {
+  padding: 0 20px 20px;
+  list-style: decimal;
+  margin-left: 24px;
+}
+
+.instrStep {
+  font-size: 14px;
+  color: var(--color-foreground-primary);
+  padding: 4px 0;
+  line-height: 1.5;
+}
+
+.markDoneBtn {
+  margin: 16px 20px;
+  padding: 14px;
+  background: var(--color-success);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.markDoneBtn:hover {
+  opacity: 0.9;
+}
+
+.markDoneBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty states */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--color-foreground-muted);
+  gap: 8px;
+  font-size: 14px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  opacity: 0.5;
+}

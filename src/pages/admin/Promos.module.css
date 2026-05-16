@@ -1,0 +1,243 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+}
+
+.filters {
+  display: flex;
+  gap: 4px;
+}
+
+.pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-primary);
+  font-size: 13px;
+  font-family: var(--font-primary);
+  font-weight: 500;
+  color: var(--color-foreground-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.pill:hover {
+  background-color: var(--color-surface-secondary);
+}
+
+.pillActive {
+  background-color: var(--color-accent-primary);
+  color: var(--color-white);
+  border-color: var(--color-accent-primary);
+}
+
+.pillActive:hover {
+  background-color: var(--color-accent-primary);
+  opacity: 0.9;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.typeBadge {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badgeBogo {
+  background-color: #E3F2FD;
+  color: #1565C0;
+}
+
+.badgeDiscount {
+  background-color: #FFF3E0;
+  color: #E65100;
+}
+
+.badgeBundle {
+  background-color: #F3E5F5;
+  color: #7B1FA2;
+}
+
+.cardDescription {
+  font-size: 13px;
+  color: var(--color-foreground-secondary);
+  line-height: 1.4;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background-color: var(--color-border-subtle);
+  border-radius: 11px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 0;
+}
+
+.toggleActive {
+  background-color: var(--color-success);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: var(--color-white);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggleActive .toggleKnob {
+  transform: translateX(18px);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--color-foreground-muted);
+  font-size: 14px;
+  grid-column: 1 / -1;
+}
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground-secondary);
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-primary);
+  color: var(--color-foreground-primary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+}
+
+.select {
+  composes: input;
+  cursor: pointer;
+}
+
+.textarea {
+  composes: input;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  color: var(--color-foreground-primary);
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}

@@ -1,0 +1,146 @@
+.container {
+  width: 100%;
+  height: var(--vh-full);
+  position: relative;
+  overflow: hidden;
+  background: #FAF5EF;
+  user-select: none;
+}
+
+.slideBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.2;
+  transition: background-image 1s ease-in-out;
+  z-index: 0;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: #FAF5EFCC;
+  z-index: 1;
+}
+
+.twoCol {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* Left column — tap to order */
+.leftCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  cursor: pointer;
+  padding: 48px;
+}
+
+.logo {
+  width: 240px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
+.tagline {
+  font-family: var(--font-primary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: #8B5E34;
+  margin-top: -12px;
+}
+
+.divider {
+  width: 60px;
+  height: 2px;
+  background: #D4871C;
+}
+
+.prompt {
+  font-family: var(--font-primary);
+  font-size: 18px;
+  font-weight: 500;
+  color: #5C3D1E;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.myOrdersBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #D4871C;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #D4871C;
+  cursor: pointer;
+}
+
+.myOrdersBtn:hover {
+  background: #fff;
+}
+
+/* Column divider */
+.colDivider {
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, #D4871C40, #D4871C40, transparent);
+  margin: 80px 0;
+}
+
+/* Right column — QR code */
+.rightCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 48px;
+}
+
+.qrTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+}
+
+.qrSubtitle {
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.qrFrame {
+  padding: 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.qrHint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-foreground-muted);
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}

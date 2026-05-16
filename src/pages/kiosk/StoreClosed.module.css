@@ -1,0 +1,113 @@
+.container {
+  width: 100%;
+  height: var(--vh-full);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  background: linear-gradient(180deg, #FAF5EF 0%, #F0E6D8 100%);
+  padding: 24px;
+}
+
+.logo {
+  height: 65px;
+  width: auto;
+}
+
+.iconCircle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--color-surface-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+  text-align: center;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--color-foreground-secondary);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 420px;
+}
+
+.hoursCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.hoursHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.hoursTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.hoursDivider {
+  height: 1px;
+  background: var(--color-border-subtle);
+}
+
+.hoursRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+}
+
+.hoursTime {
+  font-weight: 500;
+  color: var(--color-foreground-primary);
+}
+
+.footer {
+  font-size: 12px;
+  color: var(--color-foreground-muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .container { gap: 24px; }
+  .logo { height: 50px; }
+  .iconCircle { width: 88px; height: 88px; }
+  .iconCircle .material-symbols-rounded { font-size: 40px !important; }
+  .title { font-size: 24px; }
+  .subtitle { font-size: 14px; max-width: 320px; }
+  .hoursCard { padding: 24px; }
+  .hoursRow { font-size: 13px; }
+}

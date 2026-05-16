@@ -1,0 +1,116 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+.left {
+  width: 45%;
+  background: linear-gradient(135deg, #D4871C 0%, #8B5E3C 60%, #5C3D2E 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  padding: 48px;
+}
+
+.leftLogo {
+  height: 80px;
+  width: auto;
+  margin-bottom: 8px;
+  filter: brightness(0) invert(1);
+}
+
+.leftStation {
+  font-size: 16px;
+  opacity: 0.85;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.right {
+  width: 55%;
+  background: var(--color-surface-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+  margin-bottom: 32px;
+}
+
+.pinDisplay {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.pinDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-subtle);
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.pinDotFilled {
+  composes: pinDot;
+  background: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 72px);
+  gap: 12px;
+}
+
+.numBtn {
+  width: 72px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-primary);
+  font-size: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s ease;
+  color: var(--color-foreground-primary);
+}
+
+.numBtn:hover {
+  background: var(--color-surface-secondary);
+}
+
+.numBtn:active {
+  background: var(--color-warm-cream-dark);
+}
+
+.numBtnIcon {
+  composes: numBtn;
+  font-size: 16px;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.loading {
+  color: var(--color-foreground-secondary);
+  font-size: 14px;
+  margin-top: 16px;
+}

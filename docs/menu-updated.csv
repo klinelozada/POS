@@ -1,0 +1,58 @@
+Category,Item Name,Base Price,Variants,Station,Notes,Change
+Coffee - Hot,Brewed Coffee,59,Regular,prep,,
+Coffee - Hot,Americano,79,Regular,prep,,
+Coffee - Hot,Cafe Latte,89,Regular,prep,,
+Coffee - Hot,Salted Caramel,99,Regular,prep,,
+Coffee - Iced,Iced Americano,89,Regular,prep,,
+Coffee - Iced,Greek Frappe,89,Regular,prep,,PRICE 99->89
+Coffee - Iced,Iced Latte,99,Regular,prep,,PRICE 89->99
+Coffee - Iced,Dalgona,99,Regular,prep,,NAME was "Iced Dalgona"
+Coffee - Iced,Caramel Macchiato,109,Regular,prep,,NAME was "Iced Caramel Macchiato"
+Chocolates - Hot,Hot Chocolate,65,Regular,prep,,
+Chocolates - Hot,Hot Mocha,69,Regular,prep,,
+Chocolates - Iced,Iced Choco,89,Regular,prep,,NAME was "Iced Chocolate"
+Chocolates - Iced,Iced Choco Latte,105,Regular,prep,,NAME+PRICE was "Iced Chocolate Latte" @ 99
+Chocolates - Iced,Iced Choco Oreo,115,Regular,prep,,NAME+PRICE was "Iced Chocolate Oreo" @ 109
+Chocolates - Iced,Iced Choco Strawberry,115,Regular,prep,,NAME was "Iced Chocolate Strawberry"
+Milk Teas - Classics,Wintermelon,75,"12oz (49); 16oz",prep,,ADD 12oz variant @ 49
+Milk Teas - Classics,Okinawa,79,"12oz (49); 16oz",prep,,PRICE 89->79 + ADD 12oz variant @ 49
+Milk Teas - Classics,Taro,79,"12oz (49); 16oz",prep,,ADD 12oz variant @ 49
+Milk Teas - Classics,Cookies & Cream Milk Tea,99,"12oz (49); 16oz",prep,,NAME was "Cookies & Cream" + ADD 12oz variant
+Milk Teas - Mango Series,Mango Milk Tea,95,Regular,prep,,NAME was "Mango"
+Milk Teas - Mango Series,Iced Choco Mango,99,Regular,prep,,NAME was "Iced Chocolate Mango"
+Milk Teas - Mango Series,Mango Strawberry,109,Regular,prep,,
+Milk Teas - Mango Series,Iced Mango Coffee,109,Regular,prep,,
+Milk Teas - Mango Series,Mango Cloud Classic,69,Regular,prep,Buy 1 Take 1 (12oz),NEW ITEM
+Milk Teas - Mango Series,Mango Berry Cloud,69,Regular,prep,Buy 1 Take 1 (12oz),NAME was "Mang-Berry Cloud"
+Milk Teas - Mango Series,Mango Citrus Cloud,69,Regular,prep,Buy 1 Take 1 (12oz),REPLACED "Mango Passion Fruit Cloud"
+Milk Teas - Matcha Series,Matcha Latte,99,Regular,prep,,NAME was "Matcha"
+Milk Teas - Matcha Series,Dirty Matcha,99,Regular,prep,,
+Milk Teas - Matcha Series,Matcha Mango,109,Regular,prep,,
+Milk Teas - Matcha Series,Matcha Strawberry,109,Regular,prep,,
+Street Fizz,Strawberry Sunset,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Mango Sunset,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Berry Sunset,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Tropical Sunset,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Cucumber Breeze,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Lychee Fizz,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Guava Spritz,69,"12oz; 16oz (+10)",prep,,NAME was "Guava Fizz"
+Street Fizz,Calamansi Spark,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Strawberry Citrus Fizz,69,"12oz; 16oz (+10)",prep,,
+Street Fizz,Passion Citrus Punch,69,"12oz; 16oz (+10)",prep,,
+Pastas,Garlic Tuna Penne,139,Regular,kitchen,,
+Pastas,Chicken Tomato Penne,149,Regular,kitchen,,
+Noodle Corner,Jjajangmyeon with Egg,159,Regular,kitchen,,NAME+PRICE was "Jjajangmyeon" @ 99
+Noodle Corner,Kimchi Ramen with Egg,159,Regular,kitchen,,NAME+PRICE was "Kimchi Ramen" @ 149
+Noodle Corner,Buldak Cheese with Egg,179,Regular,kitchen,,NAME was "Buldak Cheese"
+Noodle Corner,Pancit Canton Combo,99,Regular,kitchen,,
+Sandwiches,Egg & Toast,59,Regular,kitchen,,
+Sandwiches,Egg Sandwich,69,Regular,kitchen,,
+Sandwiches,Ham & Egg Sandwich,89,Regular,kitchen,,
+Barkada Favorites,Pinoy Barkada Platter,329,Regular,kitchen,,PRICE 429->329
+Barkada Favorites,K-Barkada Platter,429,Regular,kitchen,,PRICE 399->429
+Pitcher,Mango Cooler Pitcher,99,Regular,prep,,
+Pitcher,Cucumber Cooler Pitcher,99,Regular,prep,,
+Street Bites,Spam Fries,125,Regular,kitchen,,NEW ITEM
+Street Bites,French Fries Solo,35,"Regular; Cheese (+4)",kitchen,,NAME+PRICE was "French Fries (Solo)" @ 69
+Street Bites,French Fries Large,65,"Regular; Cheese (+10)",kitchen,,NAME+PRICE was "French Fries (Large)" @ 99
+Street Bites,Street Bites,60,"Solo; Large (+55)",kitchen,,NAME+PRICE was "Street Bites Platter" @ 125
