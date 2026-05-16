@@ -279,6 +279,41 @@ export default function Settings() {
           Printer and payment configuration coming soon.
         </div>
       </div>
+
+      {/* System */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>System</h2>
+        <p className={styles.sectionDesc}>
+          Use this to force the app to load the latest version. Clears all cached data and reloads.
+        </p>
+        <div className={styles.saveRow}>
+          <Button size="sm" variant="secondary" onClick={async () => {
+            try {
+              // Clear service worker caches
+              if ('caches' in window) {
+                const keys = await caches.keys();
+                await Promise.all(keys.map((k) => caches.delete(k)));
+              }
+              // Unregister service workers
+              if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map((r) => r.unregister()));
+              }
+              // Clear session storage
+              sessionStorage.clear();
+              // Clear POS session route
+              localStorage.removeItem('posLastRoute');
+              toast.success('Cache cleared. Reloading...');
+              setTimeout(() => window.location.reload(), 500);
+            } catch {
+              window.location.reload();
+            }
+          }}>
+            <span className="material-symbols-rounded" style={{ fontSize: 16 }}>delete_sweep</span>
+            Clear Cache & Reload
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -74,6 +74,27 @@ export default function PosLogin() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+        <button
+          className={styles.clearCacheBtn}
+          onClick={async () => {
+            try {
+              if ('caches' in window) {
+                const keys = await caches.keys();
+                await Promise.all(keys.map((k) => caches.delete(k)));
+              }
+              if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map((r) => r.unregister()));
+              }
+              sessionStorage.clear();
+              localStorage.removeItem('posLastRoute');
+            } catch { /* ignore */ }
+            window.location.reload();
+          }}
+        >
+          <span className="material-symbols-rounded" style={{ fontSize: 14 }}>refresh</span>
+          Clear Cache & Reload
+        </button>
       </div>
     </div>
   );
