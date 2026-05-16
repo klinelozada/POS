@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCloseStoreSummary, closeStore, type CloseStoreSummary } from '../../services/storeService';
+import { getCloseStoreSummary, getStoreStatus, closeStore, type CloseStoreSummary } from '../../services/storeService';
 import { useOrders } from '../../hooks';
 import { useAuth } from '../../hooks';
+import type { Timestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import styles from './CloseStore.module.css';
 
@@ -11,19 +12,26 @@ export default function CloseStore() {
   const { user } = useAuth();
   const { orders } = useOrders();
   const [summary, setSummary] = useState<CloseStoreSummary | null>(null);
+  const [openedAt, setOpenedAt] = useState<Timestamp | null>(null);
   const [loading, setLoading] = useState(true);
   const [closing, setClosing] = useState(false);
 
   useEffect(() => {
-    getCloseStoreSummary().then((s) => {
+    Promise.all([getCloseStoreSummary(), getStoreStatus()]).then(([s, status]) => {
       setSummary(s);
+      setOpenedAt(status.openedAt);
       setLoading(false);
     });
   }, []);
 
-  const recentOrders = orders
-    .filter((o) => o.paymentStatus === 'paid')
-    .slice(0, 10);
+  // Only show orders from the current session (since store opened)
+  const sessionOrders = orders.filter((o) => {
+    if (o.paymentStatus !== 'paid') return false;
+    if (!openedAt || !o.createdAt) return false;
+    return o.createdAt.toMillis() >= openedAt.toMillis();
+  });
+
+  const recentOrders = sessionOrders.slice(0, 20);
 
   const handlePrint = () => {
     window.print();

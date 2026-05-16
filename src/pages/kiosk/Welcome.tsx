@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getCustomerOrderIds } from '../../utils/customerSession';
@@ -11,9 +11,13 @@ export default function Welcome() {
   const navigate = useNavigate();
   const base = useBasePath();
   const setOrderType = useCartStore((s) => s.setOrderType);
+  const location = useLocation();
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Reset checking on every navigation to this page
+    setChecking(true);
+
     const ids = getCustomerOrderIds();
     if (ids.length === 0) {
       setChecking(false);
@@ -33,10 +37,9 @@ export default function Welcome() {
         }
       })
       .catch(() => {
-        // If all checks fail (offline/error), let them proceed
         setChecking(false);
       });
-  }, [navigate]);
+  }, [location.key]);
 
   const handleSelect = (type: OrderType) => {
     setOrderType(type);
