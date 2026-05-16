@@ -170,6 +170,24 @@ export function subscribeToOrders(
 }
 
 /**
+ * Subscribe to real-time updates for a single order.
+ * Returns an unsubscribe function.
+ */
+export function subscribeToOrder(
+  orderId: string,
+  callback: (order: Order | null) => void
+): Unsubscribe {
+  const docRef = doc(ordersRef, orderId);
+  return onSnapshot(docRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback({ id: snapshot.id, ...snapshot.data() } as Order);
+    } else {
+      callback(null);
+    }
+  });
+}
+
+/**
  * Get a single order by ID.
  */
 export async function getOrder(id: string): Promise<Order | null> {

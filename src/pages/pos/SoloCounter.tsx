@@ -77,6 +77,16 @@ export default function SoloCounter() {
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
 
+  // Auto-redirect to solo dashboard when no active orders for 5 seconds
+  useEffect(() => {
+    if (activeOrders.length === 0 && panelMode !== 'receipt') {
+      const timer = setTimeout(() => {
+        navigate('/pos/solo');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeOrders.length, panelMode, navigate]);
+
   // Auto-switch to payment mode when all items are done during prep (and still unpaid)
   useEffect(() => {
     if (

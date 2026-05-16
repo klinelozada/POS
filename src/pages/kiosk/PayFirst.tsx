@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getCustomerOrderIds } from '../../utils/customerSession';
-import { getOrder } from '../../services/orderService';
+import { getOrder, subscribeToOrder } from '../../services/orderService';
 import type { Order } from '../../types';
 import styles from './PayFirst.module.css';
 
@@ -11,11 +11,12 @@ export default function PayFirst() {
   const base = useBasePath();
   const [unpaidOrder, setUnpaidOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [justPaid, setJustPaid] = useState(false);
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const ids = getCustomerOrderIds();
     if (ids.length === 0) {
-      // No orders — they can order freely
       navigate(`${base}/welcome`, { replace: true });
       return;
     }
@@ -27,7 +28,6 @@ export default function PayFirst() {
       );
 
       if (!unpaid) {
-        // All paid — allow new order
         navigate(`${base}/welcome`, { replace: true });
         return;
       }
@@ -36,6 +36,28 @@ export default function PayFirst() {
       setLoading(false);
     });
   }, [navigate]);
+
+  // Real-time listener: detect when order gets paid → redirect after 3s
+  useEffect(() => {
+    if (!unpaidOrder) return;
+
+    const unsubscribe = subscribeToOrder(unpaidOrder.id, (order) => {
+      if (!order) return;
+      const isPaid = order.paymentStatus === 'paid' || order.status === 'completed';
+      if (isPaid && !justPaid) {
+        setJustPaid(true);
+        setUnpaidOrder(order);
+        redirectTimer.current = setTimeout(() => {
+          navigate(`${base}`, { replace: true });
+        }, 3000);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      if (redirectTimer.current) clearTimeout(redirectTimer.current);
+    };
+  }, [unpaidOrder?.id, base, navigate, justPaid]);
 
   if (loading || !unpaidOrder) return null;
 
@@ -46,6 +68,20 @@ export default function PayFirst() {
       return `${qty}${item.name}${variant}`;
     });
   };
+
+  if (justPaid) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.icon} style={{ color: '#4CAF50' }}>
+          <span className="material-symbols-rounded">check_circle</span>
+        </div>
+        <div className={styles.title}>Payment Received!</div>
+        <div className={styles.subtitle}>
+          Thank you! Redirecting you back to the menu...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
