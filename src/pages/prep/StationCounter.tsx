@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useOrders } from '../../hooks/useOrders';
+import { useMenu } from '../../hooks/useMenu';
 import { updateOrderItemStatus } from '../../services/orderService';
 import { getMenuItemImage } from '../../utils/menuImages';
 import type { StationType } from '../../types';
@@ -17,6 +18,7 @@ function formatTime(timestamp: { toDate?: () => Date } | null | undefined): stri
 
 export default function StationCounter({ station, stationLabel }: StationCounterProps) {
   const { orders: allOrders } = useOrders();
+  const { menuItems } = useMenu();
   const orders = useMemo(() => allOrders.filter((o) => o.status === 'new' || o.status === 'preparing'), [allOrders]);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
@@ -164,26 +166,36 @@ export default function StationCounter({ station, stationLabel }: StationCounter
           {station === 'prep' ? 'Prep Instructions' : 'Cooking Instructions'}
         </div>
         {selectedItem && !selectedItem.isDone ? (
-          <>
-            <div className={styles.instrItemName}>{selectedItem.name}</div>
-            <div className={styles.instrDesc}>
-              {selectedItem.variant ? `Variant: ${selectedItem.variant}` : 'Standard preparation'}
-              {selectedItem.quantity > 1 ? ` | Quantity: ${selectedItem.quantity}` : ''}
-            </div>
-            <ol className={styles.instrSteps}>
-              <li className={styles.instrStep}>Gather ingredients for {selectedItem.name}</li>
-              <li className={styles.instrStep}>
-                {station === 'prep' ? 'Prepare according to recipe' : 'Cook according to recipe'}
-              </li>
-              <li className={styles.instrStep}>
-                {station === 'prep' ? 'Plate and present' : 'Check doneness and plate'}
-              </li>
-              <li className={styles.instrStep}>Quality check before serving</li>
-            </ol>
-            <button className={styles.markDoneBtn} onClick={handleMarkSelectedDone}>
-              Mark Item Done
-            </button>
-          </>
+          (() => {
+            const menuItem = menuItems.find((mi) => mi.id === selectedItem.menuItemId);
+            const recipe = menuItem?.prepInstructions;
+            return (
+              <>
+                <div className={styles.instrItemName}>{selectedItem.name}</div>
+                <div className={styles.instrDesc}>
+                  {selectedItem.variant ? `Variant: ${selectedItem.variant}` : 'Standard preparation'}
+                  {selectedItem.quantity > 1 ? ` | Quantity: ${selectedItem.quantity}` : ''}
+                </div>
+                {recipe ? (
+                  <div className={styles.instrRecipe} dangerouslySetInnerHTML={{ __html: recipe }} />
+                ) : (
+                  <ol className={styles.instrSteps}>
+                    <li className={styles.instrStep}>Gather ingredients for {selectedItem.name}</li>
+                    <li className={styles.instrStep}>
+                      {station === 'prep' ? 'Prepare according to recipe' : 'Cook according to recipe'}
+                    </li>
+                    <li className={styles.instrStep}>
+                      {station === 'prep' ? 'Plate and present' : 'Check doneness and plate'}
+                    </li>
+                    <li className={styles.instrStep}>Quality check before serving</li>
+                  </ol>
+                )}
+                <button className={styles.markDoneBtn} onClick={handleMarkSelectedDone}>
+                  Mark Item Done
+                </button>
+              </>
+            );
+          })()
         ) : selectedItem && selectedItem.isDone ? (
           <div className={styles.emptyState}>
             <div style={{ fontSize: 32, color: 'var(--color-success)' }}>{'\u2713'}</div>

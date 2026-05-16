@@ -463,24 +463,34 @@ export default function SoloCounter() {
             <div className={styles.rightCol}>
               <div className={styles.prepHeader}>Prep Instructions</div>
               {focusedItem && !focusedItem.isDone ? (
-                <>
-                  <div className={styles.prepItemName}>{focusedItem.name}</div>
-                  <div className={styles.prepDesc}>
-                    {focusedItem.variant ? `Variant: ${focusedItem.variant}` : 'Standard preparation'}
-                    {focusedItem.quantity > 1 ? ` | Qty: ${focusedItem.quantity}` : ''}
-                  </div>
-                  <ol className={styles.prepSteps}>
-                    <li className={styles.prepStep}>Prepare ingredients</li>
-                    <li className={styles.prepStep}>Follow recipe for {focusedItem.name}</li>
-                    <li className={styles.prepStep}>Plate and present</li>
-                  </ol>
-                  <button
-                    className={styles.markDoneBtn}
-                    onClick={() => handleItemDone(selectedOrder.id, selectedItemIndex!, true)}
-                  >
-                    Mark Item Done
-                  </button>
-                </>
+                (() => {
+                  const menuItem = menuItems.find((mi) => mi.id === focusedItem.menuItemId);
+                  const recipe = menuItem?.prepInstructions;
+                  return (
+                    <>
+                      <div className={styles.prepItemName}>{focusedItem.name}</div>
+                      <div className={styles.prepDesc}>
+                        {focusedItem.variant ? `Variant: ${focusedItem.variant}` : 'Standard preparation'}
+                        {focusedItem.quantity > 1 ? ` | Qty: ${focusedItem.quantity}` : ''}
+                      </div>
+                      {recipe ? (
+                        <div className={styles.prepRecipe} dangerouslySetInnerHTML={{ __html: recipe }} />
+                      ) : (
+                        <ol className={styles.prepSteps}>
+                          <li className={styles.prepStep}>Prepare ingredients</li>
+                          <li className={styles.prepStep}>Follow recipe for {focusedItem.name}</li>
+                          <li className={styles.prepStep}>Plate and present</li>
+                        </ol>
+                      )}
+                      <button
+                        className={styles.markDoneBtn}
+                        onClick={() => handleItemDone(selectedOrder.id, selectedItemIndex!, true)}
+                      >
+                        Mark Item Done
+                      </button>
+                    </>
+                  );
+                })()
               ) : focusedItem && focusedItem.isDone ? (
                 <div className={styles.emptyPanel}>
                   <div style={{ fontSize: 32, color: 'var(--color-success)' }}>{'\u2713'}</div>

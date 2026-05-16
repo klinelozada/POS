@@ -235,6 +235,25 @@
   line-height: 1.5;
 }
 
+.instrRecipe {
+  padding: 0 20px 20px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-foreground-primary);
+}
+.instrRecipe h3 { font-size: 16px; font-weight: 700; margin: 12px 0 6px; color: var(--color-accent-primary); }
+.instrRecipe h4 { font-size: 14px; font-weight: 600; margin: 10px 0 4px; }
+.instrRecipe ul, .instrRecipe ol { padding-left: 20px; margin: 4px 0; }
+.instrRecipe li { margin: 2px 0; }
+.instrRecipe p { margin: 4px 0; }
+.instrRecipe mark { background: #fff3cd; padding: 1px 4px; border-radius: 2px; }
+.instrRecipe hr { border: none; border-top: 1px solid var(--color-border-subtle); margin: 8px 0; }
+.instrRecipe table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12px; }
+.instrRecipe th, .instrRecipe td { border: 1px solid var(--color-border-subtle); padding: 4px 8px; text-align: left; }
+.instrRecipe th { background: var(--color-warm-cream); font-weight: 600; }
+
 .markDoneBtn {
   margin: 16px 20px;
   padding: 14px;

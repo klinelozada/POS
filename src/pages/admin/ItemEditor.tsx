@@ -10,6 +10,7 @@ import { uploadMenuItemImage } from '../../services/storageService';
 import { getMenuItemImage } from '../../utils/menuImages';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { RichTextEditor } from '../../components/RichTextEditor';
 import type { Category, MenuItemVariant, StationType } from '../../types';
 import styles from './ItemEditor.module.css';
 import toast from 'react-hot-toast';
@@ -291,11 +292,9 @@ export default function ItemEditor() {
 
         <div className={styles.field}>
           <label className={styles.label}>Prep Instructions</label>
-          <textarea
-            className={styles.textarea}
-            value={prepInstructions}
-            onChange={(e) => setPrepInstructions(e.target.value)}
-            placeholder="Preparation instructions..."
+          <RichTextEditor
+            content={prepInstructions}
+            onChange={setPrepInstructions}
           />
         </div>
 

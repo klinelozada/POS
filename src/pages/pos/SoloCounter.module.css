@@ -263,6 +263,25 @@
 .prepSteps { padding: 0 16px 16px; list-style: decimal; margin-left: 20px; }
 .prepStep { font-size: 14px; color: var(--color-foreground-primary); padding: 4px 0; line-height: 1.5; }
 
+.prepRecipe {
+  padding: 0 16px 16px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-foreground-primary);
+}
+.prepRecipe h3 { font-size: 16px; font-weight: 700; margin: 12px 0 6px; color: var(--color-accent-primary); }
+.prepRecipe h4 { font-size: 14px; font-weight: 600; margin: 10px 0 4px; }
+.prepRecipe ul, .prepRecipe ol { padding-left: 20px; margin: 4px 0; }
+.prepRecipe li { margin: 2px 0; }
+.prepRecipe p { margin: 4px 0; }
+.prepRecipe mark { background: #fff3cd; padding: 1px 4px; border-radius: 2px; }
+.prepRecipe hr { border: none; border-top: 1px solid var(--color-border-subtle); margin: 8px 0; }
+.prepRecipe table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12px; }
+.prepRecipe th, .prepRecipe td { border: 1px solid var(--color-border-subtle); padding: 4px 8px; text-align: left; }
+.prepRecipe th { background: var(--color-warm-cream); font-weight: 600; }
+
 .markDoneBtn {
   margin: 16px;
   padding: 12px;

@@ -38,24 +38,24 @@ export default function Dashboard() {
 
       <div className={styles.statsRow}>
         <div className={styles.statCard}>
-          <span className={`material-icons ${styles.statIcon}`}>receipt_long</span>
+          <span className={`material-symbols-rounded ${styles.statIcon}`}>receipt_long</span>
           <div className={styles.statValue}>{stats?.todayOrderCount ?? 0}</div>
           <div className={styles.statLabel}>Today's Orders</div>
         </div>
         <div className={styles.statCard}>
-          <span className={`material-icons ${styles.statIcon}`}>attach_money</span>
+          <span className={`material-symbols-rounded ${styles.statIcon}`}>attach_money</span>
           <div className={styles.statValue}>
             ${(stats?.todayRevenue ?? 0).toFixed(2)}
           </div>
           <div className={styles.statLabel}>Revenue</div>
         </div>
         <div className={styles.statCard}>
-          <span className={`material-icons ${styles.statIcon}`}>star</span>
+          <span className={`material-symbols-rounded ${styles.statIcon}`}>star</span>
           <div className={styles.statValue}>{popularItem}</div>
           <div className={styles.statLabel}>Popular Item</div>
         </div>
         <div className={styles.statCard}>
-          <span className={`material-icons ${styles.statIcon}`}>local_offer</span>
+          <span className={`material-symbols-rounded ${styles.statIcon}`}>local_offer</span>
           <div className={styles.statValue}>{promoCount}</div>
           <div className={styles.statLabel}>Active Promos</div>
         </div>
