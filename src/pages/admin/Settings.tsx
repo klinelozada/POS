@@ -19,6 +19,7 @@ export default function Settings() {
 
   // Order settings
   const [orderNumber, setOrderNumber] = useState('0');
+  const [requirePayFirst, setRequirePayFirst] = useState(true);
 
   // Station routing
   const [routing, setRouting] = useState<Record<string, StationType>>({});
@@ -50,6 +51,7 @@ export default function Settings() {
         setPhone(settings.cafeInfo?.phone ?? '');
         setMobileOrderUrl(settings.mobileOrderUrl ?? '');
         setOrderNumber((settings.currentOrderNumber ?? 0).toString());
+        setRequirePayFirst(settings.requirePayFirst !== false);
         setRouting(settings.stationRouting ?? {});
         setPins({
           adminPin: settings.adminPin ?? '',
@@ -87,6 +89,7 @@ export default function Settings() {
     try {
       await updateSettings({
         currentOrderNumber: parseInt(orderNumber) || 0,
+        requirePayFirst,
       });
       toast.success('Order settings saved.');
     } catch {
@@ -177,6 +180,25 @@ export default function Settings() {
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value)}
           />
+        </div>
+        <div className={styles.pinRow}>
+          <div className={styles.pinInfo}>
+            <label className={styles.label}>Require Pay First</label>
+            <span className={styles.pinDesc}>
+              When enabled, customers must pay before placing another order. When disabled, customers can order freely without paying first.
+            </span>
+          </div>
+          <div className={styles.pinInputGroup}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={requirePayFirst}
+                onChange={(e) => setRequirePayFirst(e.target.checked)}
+                style={{ width: 18, height: 18, cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>{requirePayFirst ? 'Enabled' : 'Disabled'}</span>
+            </label>
+          </div>
         </div>
         <div className={styles.saveRow}>
           <Button size="sm" onClick={handleSaveOrder} disabled={savingOrder}>

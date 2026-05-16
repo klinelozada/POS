@@ -150,6 +150,7 @@ export interface Settings {
   prepPin?: string;  // 4-digit PIN for prep station access
   kitchenPin?: string; // 4-digit PIN for kitchen station access
   mobileOrderUrl?: string; // Custom URL for QR code (defaults to window.location.origin/m)
+  requirePayFirst?: boolean; // If true, customers must pay before placing another order (default: true)
 }
 
 // Omit 'id' helper for creating new documents

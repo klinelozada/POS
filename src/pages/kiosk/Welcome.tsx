@@ -4,6 +4,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getCustomerOrderIds } from '../../utils/customerSession';
 import { getOrder } from '../../services/orderService';
+import { getSettings } from '../../services/adminService';
 import type { OrderType } from '../../types';
 import styles from './Welcome.module.css';
 
@@ -24,9 +25,18 @@ export default function Welcome() {
       return;
     }
 
-    // Check if any unpaid active orders exist
-    Promise.all(ids.map((id) => getOrder(id).catch(() => null)))
-      .then((results) => {
+    // Check settings and unpaid orders
+    Promise.all([
+      getSettings().catch(() => null),
+      Promise.all(ids.map((id) => getOrder(id).catch(() => null))),
+    ])
+      .then(([settings, results]) => {
+        // If pay-first is disabled in settings, skip the check
+        if (settings && settings.requirePayFirst === false) {
+          setChecking(false);
+          return;
+        }
+
         const hasUnpaid = results.some(
           (o) => o && o.status !== 'completed' && (o.paymentStatus ?? 'unpaid') === 'unpaid'
         );
