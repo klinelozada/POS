@@ -48,7 +48,7 @@ export default function PayFirst() {
         setJustPaid(true);
         setUnpaidOrder(order);
         redirectTimer.current = setTimeout(() => {
-          navigate(`${base}`, { replace: true });
+          navigate(`${base}/welcome`, { replace: true });
         }, 3000);
       }
     });

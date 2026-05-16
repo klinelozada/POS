@@ -15,7 +15,7 @@ export default function MobileGate({ children }: Props) {
   const [remaining, setRemaining] = useState(() => getRemainingAttempts());
   const [errorMsg, setErrorMsg] = useState('');
   const [countdown, setCountdown] = useState(3);
-  const [passed, setPassed] = useState(false);
+  const [passed, setPassed] = useState(() => sessionStorage.getItem('mobileLocationPassed') === 'true');
   const [banExpiry, setBanExpiry] = useState<Date | null>(() => getBanExpiry());
 
   const checkLocation = useCallback(async () => {
@@ -27,6 +27,7 @@ export default function MobileGate({ children }: Props) {
 
       if (result.allowed) {
         resetAttempts();
+        sessionStorage.setItem('mobileLocationPassed', 'true');
         setStep('approved');
       } else {
         const attempt = recordFailedAttempt();
