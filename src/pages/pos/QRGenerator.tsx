@@ -1,18 +1,26 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
+import { getSettings } from '../../services/adminService';
 import styles from './QRGenerator.module.css';
 
-const MOBILE_URL = `${window.location.origin}/m`;
+const DEFAULT_URL = `${window.location.origin}/m`;
 
 export default function QRGenerator() {
   const navigate = useNavigate();
   const qrRef = useRef<HTMLDivElement>(null);
+  const [mobileUrl, setMobileUrl] = useState(DEFAULT_URL);
+
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s?.mobileOrderUrl) setMobileUrl(s.mobileOrderUrl);
+    });
+  }, []);
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(MOBILE_URL);
+      await navigator.clipboard.writeText(mobileUrl);
       toast.success('URL copied!');
     } catch {
       toast.error('Failed to copy');
@@ -72,7 +80,7 @@ export default function QRGenerator() {
             <label className={styles.urlLabel}>Mobile Order URL</label>
             <div className={styles.urlRow}>
               <div className={styles.urlInput}>
-                <span className={styles.urlText}>{MOBILE_URL}</span>
+                <span className={styles.urlText}>{mobileUrl}</span>
               </div>
               <button className={styles.copyBtn} onClick={handleCopy}>
                 <span className="material-symbols-rounded" style={{ fontSize: 16 }}>content_copy</span>
@@ -100,7 +108,7 @@ export default function QRGenerator() {
         <div className={styles.rightSide}>
           <div className={styles.qrCard}>
             <div className={styles.qrFrame} ref={qrRef}>
-              <QRCodeSVG value={MOBILE_URL} size={240} level="H" />
+              <QRCodeSVG value={mobileUrl} size={240} level="H" />
             </div>
             <span className={styles.qrLabel}>Joe Street Cafe</span>
             <span className={styles.qrSubLabel}>Scan to order</span>

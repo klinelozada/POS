@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getCustomerOrderIds } from '../../utils/customerSession';
+import { getSettings } from '../../services/adminService';
 import styles from './Intro.module.css';
 
 const menuSlides = [
@@ -17,12 +18,13 @@ const menuSlides = [
   '/images/menu-pages/9.jpg',
 ];
 
-const MOBILE_URL = `${window.location.origin}/m`;
+const DEFAULT_URL = `${window.location.origin}/m`;
 
 export default function Intro() {
   const navigate = useNavigate();
   const base = useBasePath();
   const [slideIndex, setSlideIndex] = useState(0);
+  const [mobileUrl, setMobileUrl] = useState(DEFAULT_URL);
   const hasOrders = getCustomerOrderIds().length > 0;
 
   useEffect(() => {
@@ -30,6 +32,12 @@ export default function Intro() {
       setSlideIndex((prev) => (prev + 1) % menuSlides.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s?.mobileOrderUrl) setMobileUrl(s.mobileOrderUrl);
+    });
   }, []);
 
   return (
@@ -71,7 +79,7 @@ export default function Intro() {
             Scan this QR code to browse the menu and place your order directly from your device.
           </div>
           <div className={styles.qrFrame}>
-            <QRCodeSVG value={MOBILE_URL} size={200} level="H" />
+            <QRCodeSVG value={mobileUrl} size={200} level="H" />
           </div>
           <div className={styles.qrHint}>
             <span className="material-symbols-rounded" style={{ fontSize: 16 }}>smartphone</span>

@@ -148,6 +148,7 @@ export interface Settings {
   kioskPin?: string; // 4-digit PIN to unlock in-store kiosk tablets
   prepPin?: string;  // 4-digit PIN for prep station access
   kitchenPin?: string; // 4-digit PIN for kitchen station access
+  mobileOrderUrl?: string; // Custom URL for QR code (defaults to window.location.origin/m)
 }
 
 // Omit 'id' helper for creating new documents

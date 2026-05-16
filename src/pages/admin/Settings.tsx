@@ -15,6 +15,7 @@ export default function Settings() {
   const [cafeName, setCafeName] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [mobileOrderUrl, setMobileOrderUrl] = useState('');
 
   // Order settings
   const [orderNumber, setOrderNumber] = useState('0');
@@ -47,6 +48,7 @@ export default function Settings() {
         setCafeName(settings.cafeInfo?.name ?? '');
         setAddress(settings.cafeInfo?.address ?? '');
         setPhone(settings.cafeInfo?.phone ?? '');
+        setMobileOrderUrl(settings.mobileOrderUrl ?? '');
         setOrderNumber((settings.currentOrderNumber ?? 0).toString());
         setRouting(settings.stationRouting ?? {});
         setPins({
@@ -70,6 +72,7 @@ export default function Settings() {
           address: address.trim(),
           phone: phone.trim(),
         },
+        ...(mobileOrderUrl.trim() ? { mobileOrderUrl: mobileOrderUrl.trim() } : {}),
       });
       toast.success('General settings saved.');
     } catch {
@@ -144,6 +147,16 @@ export default function Settings() {
             onChange={(e) => setPhone(e.target.value)}
             placeholder="(555) 123-4567"
           />
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Mobile Order URL</label>
+          <input
+            className={styles.input}
+            value={mobileOrderUrl}
+            onChange={(e) => setMobileOrderUrl(e.target.value)}
+            placeholder="https://brandserps-demo.web.app/m"
+          />
+          <span className={styles.pinDesc}>QR code URL for customer mobile ordering. Leave empty to use current domain.</span>
         </div>
         <div className={styles.saveRow}>
           <Button size="sm" onClick={handleSaveGeneral} disabled={savingGeneral}>
