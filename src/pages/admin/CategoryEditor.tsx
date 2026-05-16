@@ -10,7 +10,7 @@ import { uploadCategoryImage } from '../../services/storageService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { IconPicker } from '../../components/IconPicker';
-import type { MenuItem, StationType } from '../../types';
+import type { Category, MenuItem, StationType } from '../../types';
 import styles from './CategoryEditor.module.css';
 import toast from 'react-hot-toast';
 
@@ -23,6 +23,7 @@ export default function CategoryEditor() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [catItems, setCatItems] = useState<MenuItem[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
 
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('category');
@@ -33,11 +34,14 @@ export default function CategoryEditor() {
   const [defaultStation, setDefaultStation] = useState<StationType>('prep');
   const [isActive, setIsActive] = useState(true);
   const [description, setDescription] = useState('');
+  const [parentId, setParentId] = useState('');
 
   useEffect(() => {
     const load = async () => {
+      const cats = await getCategories();
+      setAllCategories(cats);
+
       if (!isNew && id) {
-        const cats = await getCategories();
         const cat = cats.find((c) => c.id === id);
         if (cat) {
           setName(cat.name);
@@ -47,6 +51,7 @@ export default function CategoryEditor() {
           setDefaultStation(cat.defaultStation);
           setIsActive(cat.isActive);
           setDescription(cat.description ?? '');
+          setParentId(cat.parentId ?? '');
         }
 
         const items = await getMenuItems(id);
@@ -76,13 +81,14 @@ export default function CategoryEditor() {
 
       // Create first if new (need ID for image upload path)
       if (isNew) {
-        const createData = {
+        const createData: Omit<Category, 'id'> = {
           name: name.trim(),
           icon: icon.trim(),
           displayOrder: parseInt(displayOrder) || 0,
           defaultStation,
           isActive,
           ...(description.trim() ? { description: description.trim() } : {}),
+          ...(parentId ? { parentId } : {}),
         };
         categoryId = await createCategory(createData);
       }
@@ -103,6 +109,7 @@ export default function CategoryEditor() {
           isActive,
         };
         if (description.trim()) updateData.description = description.trim();
+        if (parentId) updateData.parentId = parentId;
         if (imageUrl) updateData.image = imageUrl;
         await updateCategory(categoryId, updateData);
       } else if (isNew && imageUrl && categoryId) {
@@ -210,6 +217,23 @@ export default function CategoryEditor() {
               <option value="kitchen">Kitchen</option>
             </select>
           </div>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Parent Category</label>
+          <select
+            className={styles.select}
+            value={parentId}
+            onChange={(e) => setParentId(e.target.value)}
+          >
+            <option value="">None (top-level)</option>
+            {allCategories
+              .filter((c) => !c.parentId && c.id !== id)
+              .sort((a, b) => a.displayOrder - b.displayOrder)
+              .map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+          </select>
         </div>
 
         <div className={styles.field}>

@@ -25,6 +25,7 @@ export interface Category {
   isActive: boolean;
   defaultStation: StationType;
   description?: string;
+  parentId?: string; // Parent category ID for sub-categories
 }
 
 export interface MenuItemVariant {

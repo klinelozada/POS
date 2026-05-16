@@ -167,11 +167,30 @@ export default function ItemEditor() {
               onChange={(e) => setCategoryId(e.target.value)}
             >
               <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
+              {categories
+                .filter((c) => !c.parentId)
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((parent) => {
+                  const children = categories
+                    .filter((c) => c.parentId === parent.id)
+                    .sort((a, b) => a.displayOrder - b.displayOrder);
+                  if (children.length === 0) {
+                    return (
+                      <option key={parent.id} value={parent.id}>
+                        {parent.name}
+                      </option>
+                    );
+                  }
+                  return (
+                    <optgroup key={parent.id} label={parent.name}>
+                      {children.map((child) => (
+                        <option key={child.id} value={child.id}>
+                          {child.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
             </select>
           </div>
         </div>

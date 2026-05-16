@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react';
+import { useState, useMemo, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenu } from '../../hooks/useMenu';
 import { updateMenuItem } from '../../services/menuService';
@@ -14,14 +14,61 @@ export default function MenuManagement() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const navigate = useNavigate();
 
+  // Build parent-child sidebar structure
+  const { sidebarItems } = useMemo(() => {
+    const childrenMap = new Map<string, typeof categories>();
+    for (const cat of categories) {
+      if (cat.parentId) {
+        const siblings = childrenMap.get(cat.parentId) ?? [];
+        siblings.push(cat);
+        childrenMap.set(cat.parentId, siblings);
+      }
+    }
+    for (const [key, children] of childrenMap) {
+      childrenMap.set(key, children.sort((a, b) => a.displayOrder - b.displayOrder));
+    }
+
+    const topLevel = categories
+      .filter((c) => !c.parentId)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+
+    const items: { cat: typeof categories[0]; depth: number }[] = [];
+    for (const parent of topLevel) {
+      items.push({ cat: parent, depth: 0 });
+      const children = childrenMap.get(parent.id) ?? [];
+      for (const child of children) {
+        items.push({ cat: child, depth: 1 });
+      }
+    }
+
+    return { sidebarItems: items };
+  }, [categories]);
+
   if (loading) return <LoadingSpinner />;
 
-  const filteredItems = selectedCatId
-    ? menuItems.filter((item) => item.categoryId === selectedCatId)
-    : menuItems;
+  // When a parent with children is selected, show items from all its children
+  const getFilteredItems = () => {
+    if (!selectedCatId) return menuItems;
+    const childIds = categories
+      .filter((c) => c.parentId === selectedCatId)
+      .map((c) => c.id);
+    if (childIds.length > 0) {
+      return menuItems.filter((item) => childIds.includes(item.categoryId));
+    }
+    return menuItems.filter((item) => item.categoryId === selectedCatId);
+  };
 
-  const getCategoryName = (catId: string) =>
-    categories.find((c) => c.id === catId)?.name ?? 'Unknown';
+  const filteredItems = getFilteredItems();
+
+  const getCategoryName = (catId: string) => {
+    const cat = categories.find((c) => c.id === catId);
+    if (!cat) return 'Unknown';
+    if (cat.parentId) {
+      const parent = categories.find((c) => c.id === cat.parentId);
+      return parent ? `${parent.name} → ${cat.name}` : cat.name;
+    }
+    return cat.name;
+  };
 
   const handleToggle = async (item: MenuItem, e: MouseEvent) => {
     e.stopPropagation();
@@ -45,13 +92,15 @@ export default function MenuManagement() {
             <span className={`material-symbols-rounded ${styles.catIcon}`}>apps</span>
             All
           </button>
-          {categories.map((cat) => (
+          {sidebarItems.map(({ cat, depth }) => (
             <button
               key={cat.id}
-              className={`${styles.catItem} ${selectedCatId === cat.id ? styles.catItemActive : ''}`}
+              className={`${styles.catItem} ${selectedCatId === cat.id ? styles.catItemActive : ''} ${depth > 0 ? styles.catItemChild : ''}`}
               onClick={() => setSelectedCatId(cat.id)}
             >
-              {cat.icon && (
+              {depth > 0 ? (
+                <span className={styles.catChildIndent}>└</span>
+              ) : cat.icon && (
                 cat.icon.startsWith('fa-') ? (
                   <i className={`fa-solid ${cat.icon} ${styles.catIcon}`} />
                 ) : (

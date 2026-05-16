@@ -75,6 +75,17 @@
   font-size: 18px;
 }
 
+.catItemChild {
+  padding-left: 20px;
+  font-size: 12px;
+}
+
+.catChildIndent {
+  color: var(--color-foreground-muted);
+  font-size: 12px;
+  margin-right: 2px;
+}
+
 .itemGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

@@ -103,6 +103,22 @@
   background-color: #fde8e8;
 }
 
+.childRow {
+  background: var(--color-surface-secondary);
+}
+
+.childBadge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
 .emptyState {
   text-align: center;
   padding: 48px 16px;

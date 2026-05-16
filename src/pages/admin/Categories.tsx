@@ -1,4 +1,4 @@
-import { type MouseEvent } from 'react';
+import { useMemo, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenu } from '../../hooks/useMenu';
 import { deleteCategory } from '../../services/menuService';
@@ -11,10 +11,47 @@ export default function Categories() {
   const { categories, menuItems, loading, refresh } = useMenu();
   const navigate = useNavigate();
 
+  // Build hierarchical list: parents with their children indented below
+  const orderedCategories = useMemo(() => {
+    const childrenMap = new Map<string, typeof categories>();
+    const parentIds = new Set<string>();
+
+    for (const cat of categories) {
+      if (cat.parentId) {
+        const siblings = childrenMap.get(cat.parentId) ?? [];
+        siblings.push(cat);
+        childrenMap.set(cat.parentId, siblings);
+        parentIds.add(cat.parentId);
+      }
+    }
+
+    for (const [key, children] of childrenMap) {
+      childrenMap.set(key, children.sort((a, b) => a.displayOrder - b.displayOrder));
+    }
+
+    const topLevel = categories
+      .filter((c) => !c.parentId)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+
+    const result: { cat: typeof categories[0]; depth: number }[] = [];
+    for (const parent of topLevel) {
+      result.push({ cat: parent, depth: 0 });
+      const children = childrenMap.get(parent.id) ?? [];
+      for (const child of children) {
+        result.push({ cat: child, depth: 1 });
+      }
+    }
+
+    return result;
+  }, [categories]);
+
   if (loading) return <LoadingSpinner />;
 
   const getItemCount = (catId: string) =>
     menuItems.filter((item) => item.categoryId === catId).length;
+
+  const getChildCount = (catId: string) =>
+    categories.filter((c) => c.parentId === catId).length;
 
   const handleDelete = async (id: string, e: MouseEvent) => {
     e.stopPropagation();
@@ -53,10 +90,11 @@ export default function Categories() {
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat, index) => (
+            {orderedCategories.map(({ cat, depth }, index) => (
               <tr
                 key={cat.id}
                 onClick={() => navigate(`/admin/categories/${cat.id}`)}
+                className={depth > 0 ? styles.childRow : undefined}
               >
                 <td>{index + 1}</td>
                 <td>
@@ -68,7 +106,15 @@ export default function Categories() {
                     )}
                   </div>
                 </td>
-                <td>{cat.name}</td>
+                <td>
+                  <span style={{ paddingLeft: depth * 24 }}>
+                    {depth > 0 && <span style={{ color: 'var(--color-foreground-muted)', marginRight: 6 }}>└</span>}
+                    {cat.name}
+                    {getChildCount(cat.id) > 0 && (
+                      <span className={styles.childBadge}>{getChildCount(cat.id)} sub</span>
+                    )}
+                  </span>
+                </td>
                 <td>{getItemCount(cat.id)}</td>
                 <td>{cat.defaultStation}</td>
                 <td>
