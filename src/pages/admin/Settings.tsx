@@ -272,14 +272,6 @@ export default function Settings() {
         ))}
       </div>
 
-      {/* Printer & Payment */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Printer & Payment</h2>
-        <div className={styles.placeholder}>
-          Printer and payment configuration coming soon.
-        </div>
-      </div>
-
       {/* System */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>System</h2>
@@ -312,6 +304,14 @@ export default function Settings() {
             <span className="material-symbols-rounded" style={{ fontSize: 16 }}>delete_sweep</span>
             Clear Cache & Reload
           </Button>
+        </div>
+      </div>
+
+      {/* Printer & Payment */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Printer & Payment</h2>
+        <div className={styles.placeholder}>
+          Printer and payment configuration coming soon.
         </div>
       </div>
     </div>
