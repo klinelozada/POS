@@ -1,15 +1,23 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './Login.module.css';
 
 export default function PosLogin() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Auto-resume: if already authenticated (e.g., app restart), go to last route
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      const lastRoute = localStorage.getItem('posLastRoute');
+      navigate(lastRoute || '/pos/mode', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -20,8 +28,7 @@ export default function PosLogin() {
 
     try {
       await login(email, password);
-      // Check if there's a redirect target
-      const target = sessionStorage.getItem('posLoginRedirect') ?? '/pos/mode';
+      const target = sessionStorage.getItem('posLoginRedirect') ?? localStorage.getItem('posLastRoute') ?? '/pos/mode';
       sessionStorage.removeItem('posLoginRedirect');
       navigate(target);
     } catch {

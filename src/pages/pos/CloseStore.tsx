@@ -34,6 +34,7 @@ export default function CloseStore() {
     setClosing(true);
     try {
       await closeStore(summary, user.uid);
+      localStorage.removeItem('posLastRoute');
       toast.success('Store closed. Daily report saved.');
       navigate('/pos/login', { replace: true });
     } catch {
