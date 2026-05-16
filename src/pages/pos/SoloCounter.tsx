@@ -47,6 +47,7 @@ export default function SoloCounter() {
   const [swapSearch, setSwapSearch] = useState('');
   const [swapCategoryId, setSwapCategoryId] = useState<string | null>(null);
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
   // Fetch user role once
   useEffect(() => {
@@ -628,7 +629,7 @@ export default function SoloCounter() {
 
                 <button
                   className={styles.completeBtn}
-                  onClick={handleCompletePayment}
+                  onClick={() => setShowPaymentConfirm(true)}
                   disabled={!canComplete}
                 >
                   Complete Payment
@@ -639,6 +640,18 @@ export default function SoloCounter() {
           </div>
         )}
       </div>
+
+      {/* Complete Payment Confirm */}
+      {showPaymentConfirm && selectedOrder && (
+        <ConfirmDialog
+          title="Complete Payment"
+          message={`Complete payment of \u20B1${selectedOrder.total.toFixed(2)} for Order #${String(selectedOrder.orderNumber).padStart(3, '0')} via ${currentMethod === 'cash' ? 'Cash' : 'Card'}?`}
+          confirmLabel="Yes, Complete"
+          variant="success"
+          onConfirm={() => { setShowPaymentConfirm(false); handleCompletePayment(); }}
+          onCancel={() => setShowPaymentConfirm(false)}
+        />
+      )}
 
       {/* Mark All as Done Confirm */}
       {showMarkAllConfirm && selectedOrder && (
