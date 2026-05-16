@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { useOrders } from '../../hooks/useOrders';
+import { useStoreStatus } from '../../hooks/useStoreStatus';
 import { getSettings } from '../../services/adminService';
 import styles from './SoloDashboard.module.css';
 
@@ -26,7 +27,16 @@ export default function SoloDashboard() {
   const [fadeIn, setFadeIn] = useState(true);
   const [mobileUrl, setMobileUrl] = useState(PRODUCTION_URL);
 
+  const storeStatus = useStoreStatus();
   const activeOrders = orders.filter((o) => o.status === 'new' || o.status === 'preparing');
+
+  // Redirect to login if store was closed from another device
+  useEffect(() => {
+    if (storeStatus && !storeStatus.isOpen) {
+      localStorage.removeItem('posLastRoute');
+      navigate('/pos/login', { replace: true });
+    }
+  }, [storeStatus, navigate]);
 
   useEffect(() => {
     getSettings().then((s) => {

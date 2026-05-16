@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../hooks/useOrders';
 import { useAuth } from '../../hooks/useAuth';
+import { useStoreStatus } from '../../hooks/useStoreStatus';
 import type { Order } from '../../types';
 import styles from './Dashboard.module.css';
 
@@ -20,6 +22,15 @@ export default function PosDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { orders } = useOrders();
+  const storeStatus = useStoreStatus();
+
+  // Redirect to login if store was closed from another device
+  useEffect(() => {
+    if (storeStatus && !storeStatus.isOpen) {
+      localStorage.removeItem('posLastRoute');
+      navigate('/pos/login', { replace: true });
+    }
+  }, [storeStatus, navigate]);
 
   const newOrders = orders.filter((o) => o.status === 'new');
   const preparingOrders = orders.filter((o) => o.status === 'preparing');

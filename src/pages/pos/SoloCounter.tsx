@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../hooks/useOrders';
 import { useMenu } from '../../hooks/useMenu';
 import { useAuth } from '../../hooks/useAuth';
+import { useStoreStatus } from '../../hooks/useStoreStatus';
 import { updateOrder, updateOrderItemStatus } from '../../services/orderService';
 import { getUserRole } from '../../services/adminService';
 import { getMenuItemImage } from '../../utils/menuImages';
@@ -48,6 +49,16 @@ export default function SoloCounter() {
   const [swapCategoryId, setSwapCategoryId] = useState<string | null>(null);
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+
+  const storeStatus = useStoreStatus();
+
+  // Redirect to login if store was closed from another device
+  useEffect(() => {
+    if (storeStatus && !storeStatus.isOpen) {
+      localStorage.removeItem('posLastRoute');
+      navigate('/pos/login', { replace: true });
+    }
+  }, [storeStatus, navigate]);
 
   // Fetch user role once
   useEffect(() => {
