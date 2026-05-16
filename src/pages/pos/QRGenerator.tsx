@@ -3,18 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { getSettings } from '../../services/adminService';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import styles from './QRGenerator.module.css';
 
-const DEFAULT_URL = `${window.location.origin}/m`;
+const PRODUCTION_URL = 'https://brandserps-demo.web.app/m';
 
 export default function QRGenerator() {
   const navigate = useNavigate();
   const qrRef = useRef<HTMLDivElement>(null);
-  const [mobileUrl, setMobileUrl] = useState(DEFAULT_URL);
+  const [mobileUrl, setMobileUrl] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getSettings().then((s) => {
-      if (s?.mobileOrderUrl) setMobileUrl(s.mobileOrderUrl);
+      setMobileUrl(s?.mobileOrderUrl || PRODUCTION_URL);
+      setLoading(false);
     });
   }, []);
 
@@ -25,7 +28,9 @@ export default function QRGenerator() {
     } catch {
       toast.error('Failed to copy');
     }
-  }, []);
+  }, [mobileUrl]);
+
+  if (loading) return <LoadingSpinner />;
 
   const handleDownload = useCallback(() => {
     const svg = qrRef.current?.querySelector('svg');

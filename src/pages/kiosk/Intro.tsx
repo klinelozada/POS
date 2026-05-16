@@ -18,13 +18,13 @@ const menuSlides = [
   '/images/menu-pages/9.jpg',
 ];
 
-const DEFAULT_URL = `${window.location.origin}/m`;
+const PRODUCTION_URL = 'https://brandserps-demo.web.app/m';
 
 export default function Intro() {
   const navigate = useNavigate();
   const base = useBasePath();
   const [slideIndex, setSlideIndex] = useState(0);
-  const [mobileUrl, setMobileUrl] = useState(DEFAULT_URL);
+  const [mobileUrl, setMobileUrl] = useState(PRODUCTION_URL);
   const hasOrders = getCustomerOrderIds().length > 0;
 
   useEffect(() => {
@@ -37,6 +37,7 @@ export default function Intro() {
   useEffect(() => {
     getSettings().then((s) => {
       if (s?.mobileOrderUrl) setMobileUrl(s.mobileOrderUrl);
+      else setMobileUrl(PRODUCTION_URL);
     });
   }, []);
 
