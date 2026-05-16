@@ -27,7 +27,7 @@ function App() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/pos" replace />} />
+          <Route path="/" element={<Navigate to="/pos/login" replace />} />
 
           {/* Kiosk — in-store tablets, PIN-protected */}
           <Route path="/kiosk/*" element={<KioskRoutes />} />
