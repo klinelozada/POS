@@ -21,16 +21,21 @@ export default function Welcome() {
     }
 
     // Check if any unpaid active orders exist
-    Promise.all(ids.map((id) => getOrder(id))).then((results) => {
-      const hasUnpaid = results.some(
-        (o) => o && o.status !== 'completed' && (o.paymentStatus ?? 'unpaid') === 'unpaid'
-      );
-      if (hasUnpaid) {
-        navigate(`${base}/pay-first`, { replace: true });
-      } else {
+    Promise.all(ids.map((id) => getOrder(id).catch(() => null)))
+      .then((results) => {
+        const hasUnpaid = results.some(
+          (o) => o && o.status !== 'completed' && (o.paymentStatus ?? 'unpaid') === 'unpaid'
+        );
+        if (hasUnpaid) {
+          navigate(`${base}/pay-first`, { replace: true });
+        } else {
+          setChecking(false);
+        }
+      })
+      .catch(() => {
+        // If all checks fail (offline/error), let them proceed
         setChecking(false);
-      }
-    });
+      });
   }, [navigate]);
 
   const handleSelect = (type: OrderType) => {

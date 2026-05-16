@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMenu } from '../../hooks/useMenu';
 import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
@@ -47,9 +47,33 @@ export default function MenuBrowse() {
     return { topLevel: top, childrenMap: childMap };
   }, [activeCategories]);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // State: null = show category grid, string = selected parent category ID
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
+
+  // Restore category from URL param (e.g., after add-to-cart navigates back)
+  useEffect(() => {
+    const catParam = searchParams.get('cat');
+    if (!catParam || topLevel.length === 0) return;
+
+    // Check if it's a top-level category
+    const isTopLevel = topLevel.find((c) => c.id === catParam);
+    if (isTopLevel) {
+      setSelectedParentId(catParam);
+      setSearchParams({}, { replace: true });
+      return;
+    }
+
+    // Check if it's a sub-category — find its parent
+    const subCat = activeCategories.find((c) => c.id === catParam);
+    if (subCat?.parentId) {
+      setSelectedParentId(subCat.parentId);
+      setSelectedSubId(catParam);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, topLevel, activeCategories]);
 
   const currentParent = selectedParentId
     ? topLevel.find((c) => c.id === selectedParentId) ?? null
