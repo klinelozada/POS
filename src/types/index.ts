@@ -154,6 +154,7 @@ export interface Settings {
   requirePayFirst?: boolean; // If true, customers must pay before placing another order (default: true)
   gcashQrUrl?: string; // Firebase Storage URL for GCash QR code image
   instapayQrUrl?: string; // Firebase Storage URL for Instapay QR code image
+  enabledPaymentMethods?: PaymentMethod[]; // Which payment methods are active (default: all)
 }
 
 // Omit 'id' helper for creating new documents

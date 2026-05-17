@@ -54,6 +54,7 @@ export default function SoloCounter() {
   const [referenceNumber, setReferenceNumber] = useState('');
   const [gcashQrUrl, setGcashQrUrl] = useState('');
   const [instapayQrUrl, setInstapayQrUrl] = useState('');
+  const [enabledMethods, setEnabledMethods] = useState<PaymentMethod[]>(['cash', 'card', 'gcash', 'instapay']);
 
   const storeStatus = useStoreStatus();
 
@@ -72,11 +73,12 @@ export default function SoloCounter() {
     }
   }, [user?.uid]);
 
-  // Load digital payment QR URLs
+  // Load payment settings
   useEffect(() => {
     getSettings().then((s) => {
       if (s?.gcashQrUrl) setGcashQrUrl(s.gcashQrUrl);
       if (s?.instapayQrUrl) setInstapayQrUrl(s.instapayQrUrl);
+      if (s?.enabledPaymentMethods) setEnabledMethods(s.enabledPaymentMethods);
     }).catch(() => {});
   }, []);
 
@@ -614,19 +616,23 @@ export default function SoloCounter() {
 
                 <div className={styles.paySectionLabel}>Payment Method</div>
                 <div className={styles.payMethodToggle}>
-                  <button
-                    className={currentMethod === 'cash' ? styles.payMethodBtnActive : styles.payMethodBtn}
-                    onClick={() => setPaymentMethodOverride('cash')}
-                  >
-                    Cash
-                  </button>
-                  <button
-                    className={currentMethod === 'card' ? styles.payMethodBtnActive : styles.payMethodBtn}
-                    onClick={() => setPaymentMethodOverride('card')}
-                  >
-                    Card
-                  </button>
-                  {gcashQrUrl && (
+                  {enabledMethods.includes('cash') && (
+                    <button
+                      className={currentMethod === 'cash' ? styles.payMethodBtnActive : styles.payMethodBtn}
+                      onClick={() => setPaymentMethodOverride('cash')}
+                    >
+                      Cash
+                    </button>
+                  )}
+                  {enabledMethods.includes('card') && (
+                    <button
+                      className={currentMethod === 'card' ? styles.payMethodBtnActive : styles.payMethodBtn}
+                      onClick={() => setPaymentMethodOverride('card')}
+                    >
+                      Card
+                    </button>
+                  )}
+                  {enabledMethods.includes('gcash') && gcashQrUrl && (
                     <button
                       className={currentMethod === 'gcash' ? styles.payMethodBtnActive : styles.payMethodBtn}
                       onClick={() => setPaymentMethodOverride('gcash')}
@@ -634,7 +640,7 @@ export default function SoloCounter() {
                       GCash
                     </button>
                   )}
-                  {instapayQrUrl && (
+                  {enabledMethods.includes('instapay') && instapayQrUrl && (
                     <button
                       className={currentMethod === 'instapay' ? styles.payMethodBtnActive : styles.payMethodBtn}
                       onClick={() => setPaymentMethodOverride('instapay')}

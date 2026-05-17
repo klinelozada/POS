@@ -27,6 +27,10 @@ export default function Settings() {
   const [instapayQrUrl, setInstapayQrUrl] = useState('');
   const [uploadingGcash, setUploadingGcash] = useState(false);
   const [uploadingInstapay, setUploadingInstapay] = useState(false);
+  const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean>>({
+    cash: true, card: true, gcash: true, instapay: true,
+  });
+  const [savingPayments, setSavingPayments] = useState(false);
   const gcashInputRef = useRef<HTMLInputElement>(null);
   const instapayInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,6 +67,11 @@ export default function Settings() {
         setRequirePayFirst(settings.requirePayFirst !== false);
         setGcashQrUrl(settings.gcashQrUrl ?? '');
         setInstapayQrUrl(settings.instapayQrUrl ?? '');
+        if (settings.enabledPaymentMethods) {
+          const methods: Record<string, boolean> = { cash: false, card: false, gcash: false, instapay: false };
+          settings.enabledPaymentMethods.forEach((m) => { methods[m] = true; });
+          setEnabledMethods(methods);
+        }
         setRouting(settings.stationRouting ?? {});
         setPins({
           adminPin: settings.adminPin ?? '',
@@ -141,6 +150,21 @@ export default function Settings() {
       toast.error('Failed to upload QR code.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleSavePaymentMethods = async () => {
+    setSavingPayments(true);
+    try {
+      const enabled = Object.entries(enabledMethods)
+        .filter(([, v]) => v)
+        .map(([k]) => k) as import('../../types').PaymentMethod[];
+      await updateSettings({ enabledPaymentMethods: enabled });
+      toast.success('Payment methods saved.');
+    } catch {
+      toast.error('Failed to save.');
+    } finally {
+      setSavingPayments(false);
     }
   };
 
@@ -236,9 +260,51 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Digital Payments */}
+      {/* Payment Methods */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Digital Payments</h2>
+        <h2 className={styles.sectionTitle}>Payment Methods</h2>
+        <p className={styles.sectionDesc}>
+          Enable or disable payment methods available at the POS. Cash is always available.
+        </p>
+
+        {([
+          { key: 'cash', label: 'Cash', desc: 'Physical cash payments (always enabled)' },
+          { key: 'card', label: 'Credit/Debit Card', desc: 'Card terminal payments' },
+          { key: 'gcash', label: 'GCash', desc: 'GCash mobile wallet via QR code' },
+          { key: 'instapay', label: 'Instapay', desc: 'Instapay bank transfer via QR code' },
+        ] as const).map(({ key, label, desc }) => (
+          <div key={key} className={styles.pinRow}>
+            <div className={styles.pinInfo}>
+              <label className={styles.label}>{label}</label>
+              <span className={styles.pinDesc}>{desc}</span>
+            </div>
+            <div className={styles.pinInputGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: key === 'cash' ? 'not-allowed' : 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={enabledMethods[key] ?? true}
+                  disabled={key === 'cash'}
+                  onChange={(e) => setEnabledMethods({ ...enabledMethods, [key]: e.target.checked })}
+                  style={{ width: 18, height: 18, cursor: key === 'cash' ? 'not-allowed' : 'pointer' }}
+                />
+                <span style={{ fontSize: 13, fontWeight: 500 }}>
+                  {enabledMethods[key] ? 'Enabled' : 'Disabled'}
+                </span>
+              </label>
+            </div>
+          </div>
+        ))}
+
+        <div className={styles.saveRow}>
+          <Button size="sm" onClick={handleSavePaymentMethods} disabled={savingPayments}>
+            {savingPayments ? 'Saving...' : 'Save Payment Methods'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Digital Payment QR Codes */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Digital Payment QR Codes</h2>
         <p className={styles.sectionDesc}>
           Upload QR code images for GCash and Instapay. These will be shown to customers during payment at the POS.
         </p>
