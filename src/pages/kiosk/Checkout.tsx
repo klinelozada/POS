@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
 import { createOrder } from '../../services/orderService';
+import { getSettings } from '../../services/adminService';
 import { addCustomerOrderId } from '../../utils/customerSession';
 import { getCurrentPosition, isWithinCafe } from '../../utils/geolocation';
 import type { PaymentMethod, OrderItem } from '../../types';
@@ -19,6 +20,13 @@ export default function Checkout() {
   const clearCart = useCartStore((s) => s.clearCart);
   const [submitting, setSubmitting] = useState(false);
   const [locationError, setLocationError] = useState('');
+  const [enabledMethods, setEnabledMethods] = useState<PaymentMethod[]>(['cash', 'card']);
+
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s?.enabledPaymentMethods) setEnabledMethods(s.enabledPaymentMethods);
+    }).catch(() => {});
+  }, []);
 
   const cartTotal = total();
 
@@ -50,7 +58,7 @@ export default function Checkout() {
       const orderItems: OrderItem[] = items.map((cartItem) => ({
         menuItemId: cartItem.menuItemId,
         name: cartItem.name,
-        variant: cartItem.variant || undefined,
+        ...(cartItem.variant ? { variant: cartItem.variant } : {}),
         quantity: cartItem.quantity,
         price: cartItem.price,
         addOns: cartItem.addOns,
@@ -126,28 +134,42 @@ export default function Checkout() {
 
             <div className={styles.paymentLabel}>Select Payment Method</div>
             <div className={styles.paymentCards}>
-              <div className={styles.paymentCard} onClick={() => handlePayment('cash')}>
-                <div className={styles.paymentIcon}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="M2 8h2" /><path d="M20 8h2" />
-                    <path d="M2 16h2" /><path d="M20 16h2" />
-                  </svg>
+              {enabledMethods.includes('cash') && (
+                <div className={styles.paymentCard} onClick={() => handlePayment('cash')}>
+                  <div className={styles.paymentIcon}>
+                    <span className="material-symbols-rounded" style={{ fontSize: 28 }}>payments</span>
+                  </div>
+                  <div className={styles.paymentTitle}>Cash</div>
+                  <div className={styles.paymentSubtitle}>Pay at counter</div>
                 </div>
-                <div className={styles.paymentTitle}>Cash</div>
-                <div className={styles.paymentSubtitle}>Pay at counter</div>
-              </div>
-              <div className={styles.paymentCard} onClick={() => handlePayment('card')}>
-                <div className={styles.paymentIcon}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                    <line x1="1" y1="10" x2="23" y2="10" />
-                  </svg>
+              )}
+              {enabledMethods.includes('card') && (
+                <div className={styles.paymentCard} onClick={() => handlePayment('card')}>
+                  <div className={styles.paymentIcon}>
+                    <span className="material-symbols-rounded" style={{ fontSize: 28 }}>credit_card</span>
+                  </div>
+                  <div className={styles.paymentTitle}>Card</div>
+                  <div className={styles.paymentSubtitle}>Debit or credit</div>
                 </div>
-                <div className={styles.paymentTitle}>Card</div>
-                <div className={styles.paymentSubtitle}>Debit or credit card</div>
-              </div>
+              )}
+              {enabledMethods.includes('gcash') && (
+                <div className={styles.paymentCard} onClick={() => handlePayment('gcash')}>
+                  <div className={styles.paymentIcon}>
+                    <span className="material-symbols-rounded" style={{ fontSize: 28 }}>smartphone</span>
+                  </div>
+                  <div className={styles.paymentTitle}>GCash</div>
+                  <div className={styles.paymentSubtitle}>Pay via GCash</div>
+                </div>
+              )}
+              {enabledMethods.includes('instapay') && (
+                <div className={styles.paymentCard} onClick={() => handlePayment('instapay')}>
+                  <div className={styles.paymentIcon}>
+                    <span className="material-symbols-rounded" style={{ fontSize: 28 }}>account_balance</span>
+                  </div>
+                  <div className={styles.paymentTitle}>Instapay</div>
+                  <div className={styles.paymentSubtitle}>Bank transfer</div>
+                </div>
+              )}
             </div>
           </>
         )}
