@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { AuthGuard } from './components/AuthGuard';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 // Lazy-loaded route groups — each will be a module with its own sub-routes
 const KioskRoutes = lazy(() => import('./pages/kiosk/routes'));
@@ -15,6 +16,7 @@ const AdminRoutes = lazy(() => import('./pages/admin/routes'));
 function App() {
   return (
     <BrowserRouter>
+      <OfflineIndicator />
       <Toaster
         position="top-right"
         toastOptions={{

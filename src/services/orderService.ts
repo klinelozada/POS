@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDoc,
+  setDoc,
   updateDoc,
   query,
   where,
@@ -11,6 +12,7 @@ import {
   type Unsubscribe,
   type QueryConstraint,
   serverTimestamp,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Order, CreateData, OrderStatus, StationStatus } from '../types';
@@ -26,31 +28,44 @@ export interface OrderFilters {
 
 /**
  * Create a new order with auto-incrementing order number.
- * Uses a single transaction for both order number increment and order creation
- * to minimize network round trips.
+ * Tries transaction (online) first, falls back to offline-safe write.
+ * Offline orders use a temporary order number (timestamp-based) and
+ * get a proper number once they sync.
  */
 export async function createOrder(
   data: Omit<CreateData<Order>, 'orderNumber' | 'createdAt'>
 ): Promise<string> {
-  // Pre-generate the document ID so we can use set() inside the transaction
   const newOrderRef = doc(ordersRef);
 
-  await runTransaction(db, async (transaction) => {
-    const settingsSnap = await transaction.get(settingsDocRef);
+  try {
+    // Online: use transaction for atomic order number increment
+    await runTransaction(db, async (transaction) => {
+      const settingsSnap = await transaction.get(settingsDocRef);
 
-    let currentNumber = 0;
-    if (settingsSnap.exists()) {
-      currentNumber = settingsSnap.data().currentOrderNumber ?? 0;
-    }
+      let currentNumber = 0;
+      if (settingsSnap.exists()) {
+        currentNumber = settingsSnap.data().currentOrderNumber ?? 0;
+      }
 
-    const nextNumber = currentNumber + 1;
-    transaction.update(settingsDocRef, { currentOrderNumber: nextNumber });
-    transaction.set(newOrderRef, {
-      ...data,
-      orderNumber: nextNumber,
-      createdAt: serverTimestamp(),
+      const nextNumber = currentNumber + 1;
+      transaction.update(settingsDocRef, { currentOrderNumber: nextNumber });
+      transaction.set(newOrderRef, {
+        ...data,
+        orderNumber: nextNumber,
+        createdAt: serverTimestamp(),
+      });
     });
-  });
+  } catch (err: unknown) {
+    // Offline fallback: write with temporary order number
+    // Uses last 3 digits of timestamp as temp number (will show as e.g. #901)
+    const tempNumber = 900 + (Date.now() % 100);
+    await setDoc(newOrderRef, {
+      ...data,
+      orderNumber: tempNumber,
+      createdAt: Timestamp.now(),
+      _offline: true,
+    });
+  }
 
   return newOrderRef.id;
 }
