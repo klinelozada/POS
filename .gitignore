@@ -44,3 +44,9 @@ android/local.properties
 *.pdf
 *.pen
 superadmin-portal.webp
+
+# Pisowifi portal (separate project)
+pisowifi-portal/
+
+# Debug APKs
+*.zip

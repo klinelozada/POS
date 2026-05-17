@@ -4,10 +4,10 @@ import {
   createPromo,
   updatePromo,
 } from '../../services/adminService';
-import { getMenuItems } from '../../services/menuService';
+import { getMenuItems, getCategories } from '../../services/menuService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import type { Promo, PromoType, MenuItem } from '../../types';
+import type { Promo, PromoType, MenuItem, Category } from '../../types';
 import styles from './Promos.module.css';
 import toast from 'react-hot-toast';
 
@@ -18,7 +18,8 @@ interface PromoFormData {
   type: PromoType;
   description: string;
   promoPrice: string;
-  eligibleItems: string[];
+  mainItemId: string;
+  takeItemIds: string[];
   startDate: string;
   endDate: string;
   poster: string;
@@ -30,7 +31,8 @@ const emptyForm: PromoFormData = {
   type: 'bogo',
   description: '',
   promoPrice: '',
-  eligibleItems: [],
+  mainItemId: '',
+  takeItemIds: [],
   startDate: '',
   endDate: '',
   poster: '',
@@ -40,6 +42,7 @@ const emptyForm: PromoFormData = {
 export default function Promos() {
   const [promos, setPromos] = useState<Promo[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showModal, setShowModal] = useState(false);
@@ -47,13 +50,15 @@ export default function Promos() {
   const [form, setForm] = useState<PromoFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
+  const [itemCategoryFilter, setItemCategoryFilter] = useState<string>('all');
   const posterInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [data, items] = await Promise.all([getPromos(), getMenuItems()]);
+    const [data, items, cats] = await Promise.all([getPromos(), getMenuItems(), getCategories()]);
     setPromos(data);
     setMenuItems(items);
+    setCategories(cats);
     setLoading(false);
   }, []);
 
@@ -90,7 +95,8 @@ export default function Promos() {
       type: promo.type,
       description: promo.description ?? '',
       promoPrice: promo.promoPrice?.toString() ?? '',
-      eligibleItems: promo.eligibleItems ?? [],
+      mainItemId: promo.mainItemId ?? '',
+      takeItemIds: promo.takeItemIds ?? promo.eligibleItems ?? [],
       startDate: promo.startDate ?? '',
       endDate: promo.endDate ?? '',
       poster: promo.poster ?? '',
@@ -106,28 +112,32 @@ export default function Promos() {
     reader.readAsDataURL(file);
   };
 
-  const toggleItem = (itemId: string) => {
+  const toggleTakeItem = (itemId: string) => {
     setForm((f) => ({
       ...f,
-      eligibleItems: f.eligibleItems.includes(itemId)
-        ? f.eligibleItems.filter((id) => id !== itemId)
-        : [...f.eligibleItems, itemId],
+      takeItemIds: f.takeItemIds.includes(itemId)
+        ? f.takeItemIds.filter((id) => id !== itemId)
+        : [...f.takeItemIds, itemId],
     }));
   };
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Name is required.'); return; }
     if (!form.promoPrice || parseFloat(form.promoPrice) <= 0) { toast.error('Promo price is required.'); return; }
-    if (form.eligibleItems.length === 0) { toast.error('Select at least one eligible item.'); return; }
+    if (!form.mainItemId) { toast.error('Select a main item.'); return; }
+    if (form.takeItemIds.length === 0) { toast.error('Select at least one "Take" item.'); return; }
 
     setSaving(true);
     try {
+      const allIds = [form.mainItemId, ...form.takeItemIds.filter((id) => id !== form.mainItemId)];
       const data: Omit<Promo, 'id'> = {
         name: form.name.trim(),
         type: form.type,
         description: form.description.trim() || undefined,
         promoPrice: parseFloat(form.promoPrice),
-        eligibleItems: form.eligibleItems,
+        mainItemId: form.mainItemId,
+        takeItemIds: form.takeItemIds,
+        eligibleItems: allIds,
         isActive: form.isActive,
         ...(form.poster ? { poster: form.poster } : {}),
         ...(form.startDate ? { startDate: form.startDate } : {}),
@@ -159,11 +169,30 @@ export default function Promos() {
     return map[type];
   };
 
-  const getItemName = (id: string) => menuItems.find((m) => m.id === id)?.name ?? id;
+  const getCatName = (catId: string) => {
+    const cat = categories.find((c) => c.id === catId);
+    if (!cat) return '';
+    const parent = cat.parentId ? categories.find((c) => c.id === cat.parentId) : null;
+    return parent ? `${parent.name} › ${cat.name}` : cat.name;
+  };
 
-  const filteredItems = itemSearch
-    ? menuItems.filter((m) => m.name.toLowerCase().includes(itemSearch.toLowerCase()))
-    : menuItems;
+  const getItemName = (id: string) => {
+    const item = menuItems.find((m) => m.id === id);
+    if (!item) return id;
+    const cat = getCatName(item.categoryId);
+    return cat ? `${item.name} (${cat})` : item.name;
+  };
+
+  const filteredItems = useMemo(() => {
+    let items = menuItems;
+    if (itemCategoryFilter !== 'all') {
+      items = items.filter((m) => m.categoryId === itemCategoryFilter);
+    }
+    if (itemSearch) {
+      items = items.filter((m) => m.name.toLowerCase().includes(itemSearch.toLowerCase()));
+    }
+    return items;
+  }, [menuItems, itemCategoryFilter, itemSearch]);
 
   if (loading) return <LoadingSpinner />;
 
@@ -328,33 +357,78 @@ export default function Promos() {
               </div>
             </div>
 
-            {/* Eligible Items */}
+            {/* Main Item (Buy 1) */}
             <div className={styles.field}>
-              <label className={styles.label}>Eligible Items *</label>
-              {form.eligibleItems.length > 0 && (
+              <label className={styles.label}>Main Item (Buy 1) *</label>
+              <select
+                className={styles.select}
+                value={form.mainItemId}
+                onChange={(e) => setForm({ ...form, mainItemId: e.target.value })}
+              >
+                <option value="">— Select main item —</option>
+                {categories
+                  .filter((cat) => menuItems.some((m) => m.categoryId === cat.id))
+                  .map((cat) => (
+                    <optgroup key={cat.id} label={getCatName(cat.id)}>
+                      {menuItems
+                        .filter((m) => m.categoryId === cat.id)
+                        .map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name} — {'\u20B1'}{item.basePrice}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ))}
+              </select>
+              {form.mainItemId && (
+                <div className={styles.selectedHint}>
+                  Selected: {getItemName(form.mainItemId)}
+                </div>
+              )}
+            </div>
+
+            {/* Take Items (Take 1) */}
+            <div className={styles.field}>
+              <label className={styles.label}>Take Items (Take 1) *</label>
+              {form.takeItemIds.length > 0 && (
                 <div className={styles.selectedItems}>
-                  {form.eligibleItems.map((id) => (
-                    <span key={id} className={styles.selectedChip} onClick={() => toggleItem(id)}>
+                  {form.takeItemIds.map((id) => (
+                    <span key={id} className={styles.selectedChip} onClick={() => toggleTakeItem(id)}>
                       {getItemName(id)} ×
                     </span>
                   ))}
                 </div>
               )}
-              <input
-                className={styles.input}
-                value={itemSearch}
-                onChange={(e) => setItemSearch(e.target.value)}
-                placeholder="Search menu items..."
-              />
+              <div className={styles.fieldRow}>
+                <select
+                  className={styles.select}
+                  value={itemCategoryFilter}
+                  onChange={(e) => setItemCategoryFilter(e.target.value)}
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {getCatName(cat.id)}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className={styles.input}
+                  value={itemSearch}
+                  onChange={(e) => setItemSearch(e.target.value)}
+                  placeholder="Search items..."
+                />
+              </div>
               <div className={styles.itemList}>
-                {filteredItems.slice(0, 20).map((item) => (
+                {filteredItems.slice(0, 30).map((item) => (
                   <label key={item.id} className={styles.itemOption}>
                     <input
                       type="checkbox"
-                      checked={form.eligibleItems.includes(item.id)}
-                      onChange={() => toggleItem(item.id)}
+                      checked={form.takeItemIds.includes(item.id)}
+                      onChange={() => toggleTakeItem(item.id)}
                     />
                     <span>{item.name}</span>
+                    <span className={styles.itemCat}>{getCatName(item.categoryId)}</span>
                     <span className={styles.itemPrice}>{'\u20B1'}{item.basePrice}</span>
                   </label>
                 ))}

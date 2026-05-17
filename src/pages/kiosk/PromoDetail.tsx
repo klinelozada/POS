@@ -5,7 +5,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getPromos } from '../../services/adminService';
 import { getMenuItemImage } from '../../utils/menuImages';
-import type { Promo } from '../../types';
+import type { Promo, MenuItem } from '../../types';
 import styles from './PromoDetail.module.css';
 
 export default function PromoDetail() {
@@ -17,7 +17,7 @@ export default function PromoDetail() {
 
   const [promo, setPromo] = useState<Promo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedTakeId, setSelectedTakeId] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
@@ -34,38 +34,40 @@ export default function PromoDetail() {
     return null;
   }
 
-  const eligibleItems = menuItems.filter(
-    (m) => promo.eligibleItems.includes(m.id) && m.isAvailable
+  const mainItem = menuItems.find((m) => m.id === promo.mainItemId);
+  const takeItems = menuItems.filter(
+    (m) => promo.takeItemIds.includes(m.id) && m.isAvailable
   );
 
-  const selectedItem = selectedItemId ? eligibleItems.find((m) => m.id === selectedItemId) : null;
+  const selectedTakeItem = selectedTakeId ? takeItems.find((m) => m.id === selectedTakeId) : null;
+
+  const getItemImage = (item: MenuItem) => item.photo || getMenuItemImage(item.name);
 
   const handleAddToCart = () => {
-    if (!selectedItem) return;
+    if (!mainItem || !selectedTakeItem) return;
 
     const promoGroupId = `${promo.id}_${Date.now()}`;
 
-    // For BOGO: add 2 of the same item — first at promo price, second free
     addPromoItems([
       {
-        menuItemId: selectedItem.id,
-        name: selectedItem.name,
+        menuItemId: mainItem.id,
+        name: mainItem.name,
         variant: '',
         quantity: 1,
         price: promo.promoPrice,
         addOns: [],
-        station: selectedItem.station,
+        station: mainItem.station,
         promoId: promoGroupId,
         promoName: promo.name,
       },
       {
-        menuItemId: selectedItem.id,
-        name: selectedItem.name,
+        menuItemId: selectedTakeItem.id,
+        name: selectedTakeItem.name,
         variant: '',
         quantity: 1,
         price: 0,
         addOns: [],
-        station: selectedItem.station,
+        station: selectedTakeItem.station,
         promoId: promoGroupId,
         promoName: promo.name,
         isFreeItem: true,
@@ -106,7 +108,6 @@ export default function PromoDetail() {
 
       {/* Info */}
       <div className={styles.promoInfo}>
-        <div className={styles.promoName}>{promo.name}</div>
         <div className={styles.promoPrice}>{'\u20B1'}{promo.promoPrice.toFixed(2)}</div>
         {promo.description && (
           <div className={styles.promoDesc}>{promo.description}</div>
@@ -116,19 +117,44 @@ export default function PromoDetail() {
         )}
       </div>
 
-      {/* Select item */}
+      {/* Main Item (fixed) */}
+      {mainItem && (
+        <div className={styles.mainItemSection}>
+          <div className={styles.sectionLabel}>Buy 1</div>
+          <div className={styles.mainItemCard}>
+            <div className={styles.itemPhoto}>
+              {getItemImage(mainItem) ? (
+                <img src={getItemImage(mainItem)} alt={mainItem.name} />
+              ) : (
+                <span className="material-symbols-rounded" style={{ fontSize: 28, color: 'var(--color-foreground-muted)' }}>
+                  local_cafe
+                </span>
+              )}
+            </div>
+            <div className={styles.mainItemInfo}>
+              <div className={styles.mainItemName}>{mainItem.name}</div>
+              <div className={styles.mainItemPrice}>{'\u20B1'}{promo.promoPrice.toFixed(2)}</div>
+            </div>
+            <span className={styles.checkMark}>
+              <span className="material-symbols-rounded" style={{ fontSize: 16 }}>check</span>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Take Items (selectable grid) */}
       <div className={styles.selectSection}>
-        <div className={styles.selectLabel}>Choose your item:</div>
+        <div className={styles.selectLabel}>Take 1 — Choose your free item:</div>
         <div className={styles.itemGrid}>
-          {eligibleItems.map((item) => (
+          {takeItems.map((item) => (
             <div
               key={item.id}
-              className={`${styles.itemCard} ${selectedItemId === item.id ? styles.itemCardSelected : ''}`}
-              onClick={() => setSelectedItemId(item.id)}
+              className={`${styles.itemCard} ${selectedTakeId === item.id ? styles.itemCardSelected : ''}`}
+              onClick={() => setSelectedTakeId(item.id)}
             >
               <div className={styles.itemPhoto}>
-                {(item.photo || getMenuItemImage(item.name)) ? (
-                  <img src={item.photo || getMenuItemImage(item.name)} alt={item.name} />
+                {getItemImage(item) ? (
+                  <img src={getItemImage(item)} alt={item.name} />
                 ) : (
                   <span className="material-symbols-rounded" style={{ fontSize: 28, color: 'var(--color-foreground-muted)' }}>
                     local_cafe
@@ -136,7 +162,7 @@ export default function PromoDetail() {
                 )}
               </div>
               <div className={styles.itemName}>{item.name}</div>
-              {selectedItemId === item.id && (
+              {selectedTakeId === item.id && (
                 <span className={styles.checkMark}>
                   <span className="material-symbols-rounded" style={{ fontSize: 16 }}>check</span>
                 </span>
@@ -150,7 +176,7 @@ export default function PromoDetail() {
       <div className={styles.footer}>
         <button
           className={styles.addBtn}
-          disabled={!selectedItem}
+          disabled={!selectedTakeItem}
           onClick={handleAddToCart}
         >
           Add to Cart — {'\u20B1'}{promo.promoPrice.toFixed(2)}

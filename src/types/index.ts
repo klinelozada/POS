@@ -100,7 +100,9 @@ export interface Promo {
   description?: string;
   poster?: string; // base64 data URL or image URL
   promoPrice: number; // override price for the promo (e.g. ₱69 for B1T1)
-  eligibleItems: string[]; // menu item IDs that can be used with this promo
+  mainItemId: string; // The "Buy 1" item (always included)
+  takeItemIds: string[]; // The "Take 1" options (customer picks one)
+  eligibleItems: string[]; // All eligible item IDs (mainItemId + takeItemIds combined)
   startDate?: string; // ISO date string
   endDate?: string; // ISO date string
   isActive: boolean;

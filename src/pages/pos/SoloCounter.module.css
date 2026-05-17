@@ -240,6 +240,35 @@
 .checklistName { flex: 1; font-size: 14px; color: var(--color-foreground-primary); }
 .checklistDone { text-decoration: line-through; color: var(--color-foreground-muted); }
 .checklistVariant { font-size: 12px; color: var(--color-foreground-secondary); }
+.checklistIndented { padding-left: 32px; }
+
+.promoChecklistGroup {
+  border-left: 3px solid #1565C0;
+  margin-bottom: 2px;
+}
+
+.promoChecklistHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
+}
+
+.promoChecklistBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1565C0;
+  background: #E3F2FD;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-transform: uppercase;
+}
+
+.promoChecklistName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground-secondary);
+}
 
 /* Right column */
 .rightCol {
@@ -348,6 +377,26 @@
 .payItemVariant { font-size: 12px; color: var(--color-foreground-secondary); }
 .payItemQty { font-size: 14px; color: var(--color-foreground-secondary); white-space: nowrap; }
 .payItemPrice { font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+.payPromoGroup {
+  border-left: 3px solid #1565C0;
+  padding: 10px 0 10px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.payPromoHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.payPromoSubItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 4px 8px;
+}
 
 .paySidebar {
   width: 280px;

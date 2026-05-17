@@ -13,6 +13,48 @@ import styles from './SoloCounter.module.css';
 
 type PanelMode = 'prep' | 'payment' | 'receipt';
 
+interface PromoGroupRow {
+  type: 'promo';
+  promoId: string;
+  promoName: string;
+  items: { item: OrderItem; index: number }[];
+  totalPrice: number;
+}
+
+interface RegularRow {
+  type: 'regular';
+  item: OrderItem;
+  index: number;
+}
+
+type OrderRow = PromoGroupRow | RegularRow;
+
+function groupOrderItems(items: OrderItem[]): OrderRow[] {
+  const rows: OrderRow[] = [];
+  const seenPromos = new Set<string>();
+
+  items.forEach((item, index) => {
+    if (item.promoId) {
+      if (seenPromos.has(item.promoId)) return;
+      seenPromos.add(item.promoId);
+      const groupItems = items
+        .map((it, i) => ({ item: it, index: i }))
+        .filter((it) => it.item.promoId === item.promoId);
+      const totalPrice = groupItems.reduce((sum, it) => sum + it.item.price * it.item.quantity, 0);
+      rows.push({
+        type: 'promo',
+        promoId: item.promoId,
+        promoName: item.promoName || 'Promo',
+        items: groupItems,
+        totalPrice,
+      });
+    } else {
+      rows.push({ type: 'regular', item, index });
+    }
+  });
+  return rows;
+}
+
 function formatTime(timestamp: { toDate?: () => Date } | null | undefined): string {
   if (!timestamp || typeof timestamp.toDate !== 'function') return '--:--';
   return timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -405,16 +447,36 @@ export default function SoloCounter() {
                   <span>{currentMethod === 'gcash' ? 'GCash' : currentMethod === 'instapay' ? 'Instapay' : currentMethod === 'cash' ? 'Cash' : 'Card'}</span>
                 </div>
                 <div className={styles.receiptDivider} />
-                {receiptOrder.items.map((item, i) => (
-                  <div key={i} className={styles.receiptItem}>
-                    <div className={styles.receiptItemLeft}>
-                      <span>{item.name}</span>
-                      {item.variant && <span className={styles.receiptItemVariant}> ({item.variant})</span>}
-                      {item.quantity > 1 && <span className={styles.receiptItemQty}> x{item.quantity}</span>}
+                {groupOrderItems(receiptOrder.items).map((row) => {
+                  if (row.type === 'promo') {
+                    return (
+                      <div key={row.promoId}>
+                        <div className={styles.receiptItem} style={{ fontWeight: 600 }}>
+                          <div className={styles.receiptItemLeft}>
+                            <span>{row.promoName} (B1T1)</span>
+                          </div>
+                          <span>{'\u20B1'}{row.totalPrice.toFixed(2)}</span>
+                        </div>
+                        {row.items.map(({ item, index }) => (
+                          <div key={index} className={styles.receiptItem} style={{ paddingLeft: 16, fontSize: 12, color: '#666' }}>
+                            <span>  {item.isFreeItem ? '+ FREE: ' : '• '}{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  const { item } = row;
+                  return (
+                    <div key={row.index} className={styles.receiptItem}>
+                      <div className={styles.receiptItemLeft}>
+                        <span>{item.name}</span>
+                        {item.variant && <span className={styles.receiptItemVariant}> ({item.variant})</span>}
+                        {item.quantity > 1 && <span className={styles.receiptItemQty}> x{item.quantity}</span>}
+                      </div>
+                      <span>{'\u20B1'}{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
-                    <span>{'\u20B1'}{(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
-                ))}
+                  );
+                })}
                 <div className={styles.receiptDivider} />
                 <div className={styles.receiptRow}>
                   <span>Subtotal</span>
@@ -469,36 +531,72 @@ export default function SoloCounter() {
               <div className={styles.midChecklist}>
                 <div className={styles.priceBar}>{'\u20B1'}{selectedOrder.total.toFixed(2)}</div>
                 <div className={styles.checklistScroll}>
-                  {selectedOrder.items.map((item, index) => (
-                    <div
-                      key={index}
-                      className={`${styles.checklistItem} ${selectedItemIndex === index ? styles.checklistItemSelected : ''}`}
-                      onClick={() => setSelectedItemIndex(index)}
-                    >
-                      <input
-                        type="checkbox"
-                        className={styles.checklistCheckbox}
-                        checked={item.isDone}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleItemDone(selectedOrder.id, index, e.target.checked);
-                        }}
-                      />
-                      <div>
-                        <div className={`${styles.checklistName} ${item.isDone ? styles.checklistDone : ''}`}>
-                          {item.name}
-                          {item.promoName && (
-                            <span style={{ fontSize: 10, fontWeight: 600, color: '#1565C0', background: '#E3F2FD', padding: '1px 5px', borderRadius: 6, marginLeft: 4 }}>
-                              {item.isFreeItem ? 'FREE' : item.promoName}
-                            </span>
+                  {groupOrderItems(selectedOrder.items).map((row) => {
+                    if (row.type === 'promo') {
+                      return (
+                        <div key={row.promoId} className={styles.promoChecklistGroup}>
+                          <div className={styles.promoChecklistHeader}>
+                            <span className={styles.promoChecklistBadge}>B1T1</span>
+                            <span className={styles.promoChecklistName}>{row.promoName}</span>
+                          </div>
+                          {row.items.map(({ item, index }) => (
+                            <div
+                              key={index}
+                              className={`${styles.checklistItem} ${styles.checklistIndented} ${selectedItemIndex === index ? styles.checklistItemSelected : ''}`}
+                              onClick={() => setSelectedItemIndex(index)}
+                            >
+                              <input
+                                type="checkbox"
+                                className={styles.checklistCheckbox}
+                                checked={item.isDone}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleItemDone(selectedOrder.id, index, e.target.checked);
+                                }}
+                              />
+                              <div>
+                                <div className={`${styles.checklistName} ${item.isDone ? styles.checklistDone : ''}`}>
+                                  {item.name}
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: item.isFreeItem ? '#2E7D32' : '#1565C0', background: item.isFreeItem ? '#E8F5E9' : '#E3F2FD', padding: '1px 5px', borderRadius: 6, marginLeft: 4 }}>
+                                    {item.isFreeItem ? 'FREE' : 'Buy'}
+                                  </span>
+                                </div>
+                                {item.variant && (
+                                  <div className={styles.checklistVariant}>{item.variant}</div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    const { item, index } = row;
+                    return (
+                      <div
+                        key={index}
+                        className={`${styles.checklistItem} ${selectedItemIndex === index ? styles.checklistItemSelected : ''}`}
+                        onClick={() => setSelectedItemIndex(index)}
+                      >
+                        <input
+                          type="checkbox"
+                          className={styles.checklistCheckbox}
+                          checked={item.isDone}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleItemDone(selectedOrder.id, index, e.target.checked);
+                          }}
+                        />
+                        <div>
+                          <div className={`${styles.checklistName} ${item.isDone ? styles.checklistDone : ''}`}>
+                            {item.name}
+                          </div>
+                          {item.variant && (
+                            <div className={styles.checklistVariant}>{item.variant}</div>
                           )}
                         </div>
-                        {item.variant && (
-                          <div className={styles.checklistVariant}>{item.variant}</div>
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 {!allItemsDone && (
                   <button
@@ -574,7 +672,35 @@ export default function SoloCounter() {
             </div>
             <div className={styles.payContent}>
               <div className={styles.payItemsList}>
-                {selectedOrder.items.map((item, index) => {
+                {groupOrderItems(selectedOrder.items).map((row) => {
+                  if (row.type === 'promo') {
+                    return (
+                      <div key={row.promoId} className={styles.payPromoGroup}>
+                        <div className={styles.payPromoHeader}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#1565C0', background: '#E3F2FD', padding: '2px 8px', borderRadius: 12 }}>B1T1</span>
+                          <span className={styles.payItemName}>{row.promoName}</span>
+                          <span style={{ flex: 1 }} />
+                          <div className={styles.payItemPrice}>{'\u20B1'}{row.totalPrice.toFixed(2)}</div>
+                        </div>
+                        {row.items.map(({ item, index }) => (
+                          <div key={index} className={styles.payPromoSubItem}>
+                            <div className={styles.payItemPhoto}>
+                              {getMenuItemImage(item.name) ? (
+                                <img src={getMenuItemImage(item.name)} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
+                              ) : '\u2615'}
+                            </div>
+                            <div className={styles.payItemInfo}>
+                              <div className={styles.payItemName}>{item.name}</div>
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: item.isFreeItem ? '#2E7D32' : '#1565C0', background: item.isFreeItem ? '#E8F5E9' : '#E3F2FD', padding: '2px 6px', borderRadius: 8 }}>
+                              {item.isFreeItem ? 'FREE' : 'Buy'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  const { item, index } = row;
                   const itemTotal = item.price * item.quantity;
                   return (
                     <div key={index} className={styles.payItem}>

@@ -1,8 +1,25 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getMenuItemImage } from '../../utils/menuImages';
 import styles from './Cart.module.css';
+
+interface PromoGroup {
+  type: 'promo';
+  promoId: string;
+  promoName: string;
+  price: number;
+  items: { name: string; isFree: boolean; menuItemId: string }[];
+  firstIndex: number;
+}
+
+interface RegularItem {
+  type: 'regular';
+  index: number;
+}
+
+type CartRow = PromoGroup | RegularItem;
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -15,6 +32,39 @@ export default function Cart() {
   const total = useCartStore((s) => s.total);
 
   const cartTotal = total();
+
+  // Group promo items together, keep regular items as-is
+  const rows = useMemo(() => {
+    const result: CartRow[] = [];
+    const seenPromos = new Set<string>();
+
+    items.forEach((item, index) => {
+      if (item.promoId) {
+        if (seenPromos.has(item.promoId)) return;
+        seenPromos.add(item.promoId);
+        // Find all items with same promoId
+        const groupItems = items
+          .map((it, i) => ({ ...it, idx: i }))
+          .filter((it) => it.promoId === item.promoId);
+        const promoPrice = groupItems.reduce((sum, it) => sum + it.price * it.quantity, 0);
+        result.push({
+          type: 'promo',
+          promoId: item.promoId,
+          promoName: item.promoName || 'Promo',
+          price: promoPrice,
+          items: groupItems.map((it) => ({
+            name: it.name,
+            isFree: !!it.isFreeItem,
+            menuItemId: it.menuItemId,
+          })),
+          firstIndex: index,
+        });
+      } else {
+        result.push({ type: 'regular', index });
+      }
+    });
+    return result;
+  }, [items]);
 
   return (
     <div className={styles.container}>
@@ -40,25 +90,58 @@ export default function Cart() {
       ) : (
         <>
           <div className={styles.itemsList}>
-            {items.map((item, index) => {
+            {rows.map((row) => {
+              if (row.type === 'promo') {
+                return (
+                  <div key={row.promoId} className={styles.promoGroup}>
+                    <div className={styles.promoGroupHeader}>
+                      <div className={styles.promoGroupInfo}>
+                        <span className={styles.promoGroupName}>{row.promoName}</span>
+                        <span className={styles.promoGroupBadge}>B1T1</span>
+                      </div>
+                      <div className={styles.promoGroupPrice}>
+                        {'\u20B1'}{row.price.toFixed(2)}
+                      </div>
+                      <button className={styles.removeBtn} onClick={() => removePromoGroup(row.firstIndex)}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className={styles.promoGroupItems}>
+                      {row.items.map((subItem, i) => (
+                        <div key={i} className={styles.promoSubItem}>
+                          <div className={styles.promoSubPhoto}>
+                            {getMenuItemImage(subItem.name) ? (
+                              <img src={getMenuItemImage(subItem.name)} alt={subItem.name} />
+                            ) : (
+                              <span style={{ fontSize: 14 }}>{'\u2615'}</span>
+                            )}
+                          </div>
+                          <span className={styles.promoSubName}>{subItem.name}</span>
+                          <span className={styles.promoSubTag}>
+                            {subItem.isFree ? 'FREE' : 'Buy'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              const item = items[row.index];
               const addOnsTotal = item.addOns.reduce((sum, a) => sum + a.price, 0);
               const lineTotal = (item.price + addOnsTotal) * item.quantity;
               return (
-                <div key={`${item.menuItemId}-${item.variant}-${index}`} className={styles.cartItem}>
+                <div key={`${item.menuItemId}-${item.variant}-${row.index}`} className={styles.cartItem}>
                   <div className={styles.itemPhoto}>
                     {getMenuItemImage(item.name) ? (
                       <img src={getMenuItemImage(item.name)} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
                     ) : '\u2615'}
                   </div>
                   <div className={styles.itemInfo}>
-                    <div className={styles.itemName}>
-                      {item.name}
-                      {item.promoName && (
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#1565C0', background: '#E3F2FD', padding: '2px 6px', borderRadius: 8, marginLeft: 6 }}>
-                          {item.isFreeItem ? 'FREE' : item.promoName}
-                        </span>
-                      )}
-                    </div>
+                    <div className={styles.itemName}>{item.name}</div>
                     {item.variant && (
                       <div className={styles.itemVariant}>{item.variant}</div>
                     )}
@@ -69,30 +152,24 @@ export default function Cart() {
                     )}
                   </div>
                   <div className={styles.itemPrice}>
-                    {item.isFreeItem ? 'FREE' : `${'\u20B1'}${lineTotal.toFixed(2)}`}
+                    {'\u20B1'}{lineTotal.toFixed(2)}
                   </div>
-                  {!item.promoId ? (
-                    <div className={styles.qtyControls}>
-                      <button
-                        className={styles.qtyBtn}
-                        onClick={() => updateQuantity(index, item.quantity - 1)}
-                      >
-                        -
-                      </button>
-                      <span className={styles.qtyValue}>{item.quantity}</span>
-                      <button
-                        className={styles.qtyBtn}
-                        onClick={() => updateQuantity(index, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  ) : (
-                    <div className={styles.qtyControls}>
-                      <span className={styles.qtyValue}>1</span>
-                    </div>
-                  )}
-                  <button className={styles.removeBtn} onClick={() => item.promoId ? removePromoGroup(index) : removeItem(index)}>
+                  <div className={styles.qtyControls}>
+                    <button
+                      className={styles.qtyBtn}
+                      onClick={() => updateQuantity(row.index, item.quantity - 1)}
+                    >
+                      -
+                    </button>
+                    <span className={styles.qtyValue}>{item.quantity}</span>
+                    <button
+                      className={styles.qtyBtn}
+                      onClick={() => updateQuantity(row.index, item.quantity + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button className={styles.removeBtn} onClick={() => removeItem(row.index)}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="3 6 5 6 21 6" />
                       <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
