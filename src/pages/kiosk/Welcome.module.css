@@ -79,6 +79,56 @@
   margin-top: -8px;
 }
 
+.myOrdersSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 504px;
+  padding: 0 16px;
+}
+
+.divider {
+  width: 80px;
+  height: 1px;
+  background: #ddd;
+}
+
+.myOrdersBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: transparent;
+  border: 2px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-foreground-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.myOrdersBtn:hover {
+  border-color: var(--color-accent-primary);
+  background: #FFF8F0;
+}
+
+.orderBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--color-accent-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 @media (max-width: 768px) {
   .container { gap: 24px; padding: 24px 16px; }
   .logo { width: 160px; height: 65px; }

@@ -14,24 +14,30 @@ export default function Welcome() {
   const setOrderType = useCartStore((s) => s.setOrderType);
   const location = useLocation();
   const [checking, setChecking] = useState(true);
+  const [activeCount, setActiveCount] = useState(0);
+  const isMobile = base === '/m';
 
   useEffect(() => {
-    // Reset checking on every navigation to this page
     setChecking(true);
 
     const ids = getCustomerOrderIds();
     if (ids.length === 0) {
       setChecking(false);
+      setActiveCount(0);
       return;
     }
 
-    // Check settings and unpaid orders
     Promise.all([
       getSettings().catch(() => null),
       Promise.all(ids.map((id) => getOrder(id).catch(() => null))),
     ])
       .then(([settings, results]) => {
-        // If pay-first is disabled in settings, skip the check
+        const validOrders = results.filter((o) => o !== null);
+        const active = validOrders.filter(
+          (o) => o!.status !== 'completed' && o!.status !== 'cancelled'
+        );
+        setActiveCount(active.length);
+
         if (settings && settings.requirePayFirst === false) {
           setChecking(false);
           return;
@@ -75,6 +81,20 @@ export default function Welcome() {
           <div className={styles.cardSubtitle}>Pack it to go</div>
         </div>
       </div>
+
+      {/* My Orders - mobile only */}
+      {isMobile && (
+        <div className={styles.myOrdersSection}>
+          <div className={styles.divider} />
+          <button className={styles.myOrdersBtn} onClick={() => navigate(`${base}/my-orders`)}>
+            <span className="material-symbols-rounded" style={{ fontSize: 20 }}>receipt_long</span>
+            My Orders
+            {activeCount > 0 && (
+              <span className={styles.orderBadge}>{activeCount}</span>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

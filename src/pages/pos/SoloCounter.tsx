@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../hooks/useOrders';
 import { useMenu } from '../../hooks/useMenu';
@@ -99,6 +99,34 @@ export default function SoloCounter() {
   const [enabledMethods, setEnabledMethods] = useState<PaymentMethod[]>(['cash', 'card', 'gcash', 'instapay']);
 
   const storeStatus = useStoreStatus();
+
+  // Notification sound for new orders
+  const knownOrderIds = useRef<Set<string>>(new Set());
+  const notificationAudio = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationAudio.current = new Audio('/sounds/order-notification.mp3');
+  }, []);
+
+  useEffect(() => {
+    if (orders.length === 0) return;
+
+    // On first load, just populate known IDs without playing sound
+    if (knownOrderIds.current.size === 0) {
+      orders.forEach((o) => knownOrderIds.current.add(o.id));
+      return;
+    }
+
+    // Check for new orders
+    const newOrders = orders.filter((o) => !knownOrderIds.current.has(o.id) && o.status === 'new');
+    if (newOrders.length > 0) {
+      notificationAudio.current?.play().catch(() => {});
+      newOrders.forEach((o) => knownOrderIds.current.add(o.id));
+    }
+
+    // Keep set in sync (add any missing)
+    orders.forEach((o) => knownOrderIds.current.add(o.id));
+  }, [orders]);
 
   // Redirect to login if store was closed from another device
   useEffect(() => {

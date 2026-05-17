@@ -1,6 +1,7 @@
 .container {
   width: 100%;
-  min-height: var(--vh-full);
+  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--color-warm-cream);
   display: flex;
   flex-direction: column;
@@ -17,10 +18,14 @@
   flex-shrink: 0;
 }
 
-.logo {
-  width: 60px;
-  height: 24px;
-  object-fit: contain;
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--color-foreground-primary);
+  display: flex;
+  align-items: center;
 }
 
 .headerTitle {
@@ -28,24 +33,6 @@
   font-weight: 700;
   color: var(--color-foreground-primary);
   flex: 1;
-}
-
-.newOrderBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--color-accent-primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-full);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.newOrderBtn:hover {
-  opacity: 0.9;
 }
 
 .body {
@@ -139,11 +126,33 @@
   border: 1px solid #1A8A4A;
 }
 
-.orderItems {
-  font-size: 13px;
-  color: var(--color-foreground-secondary);
-  line-height: 1.5;
-  margin-bottom: 8px;
+.orderProgress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-accent-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-foreground-muted);
+  white-space: nowrap;
 }
 
 .orderFooter {
@@ -163,9 +172,143 @@
   color: var(--color-foreground-muted);
 }
 
-.chevron {
-  font-size: 18px;
+/* Detail view */
+.readyBanner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  background: #E6F7ED;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  color: #1A8A4A;
+}
+
+.readyText {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.detailMeta {
+  background: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.detailMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+}
+
+.detailMetaRow:not(:last-child) {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.progressText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.itemsSection {
+  background: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.itemsSectionLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground-secondary);
+  margin-bottom: 12px;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.detailItem:last-child {
+  border-bottom: none;
+}
+
+.detailItemDone {
+  opacity: 0.6;
+}
+
+.detailItemCheck {
+  flex-shrink: 0;
+}
+
+.detailItemInfo {
+  flex: 1;
+}
+
+.detailItemName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.detailItemVariant {
+  font-size: 12px;
+  color: var(--color-foreground-secondary);
+  margin-top: 2px;
+}
+
+.freeTag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2E7D32;
+  background: #E8F5E9;
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+.detailItemStatus {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--color-foreground-muted);
+}
+
+.detailFooter {
+  background: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.detailFooterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+}
+
+.detailTotal {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-accent-primary);
+}
+
+.detailFooterMeta {
+  font-size: 12px;
+  color: var(--color-foreground-muted);
+  margin-top: 8px;
 }
 
 .empty {
