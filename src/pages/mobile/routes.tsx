@@ -9,6 +9,7 @@ import Checkout from '../kiosk/Checkout';
 import OrderConfirmed from '../kiosk/OrderConfirmed';
 import MyOrders from '../kiosk/MyOrders';
 import PayFirst from '../kiosk/PayFirst';
+import PromoDetail from '../kiosk/PromoDetail';
 
 function MobileContent() {
   return (
@@ -16,6 +17,7 @@ function MobileContent() {
       <Route index element={<Welcome />} />
       <Route path="menu" element={<MenuBrowse />} />
       <Route path="menu/:id" element={<ItemDetail />} />
+      <Route path="promo/:id" element={<PromoDetail />} />
       <Route path="cart" element={<Cart />} />
       <Route path="checkout" element={<Checkout />} />
       <Route path="confirmed" element={<OrderConfirmed />} />

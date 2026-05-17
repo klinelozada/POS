@@ -301,7 +301,7 @@ export default function CategoryEditor() {
                 {catItems.map((item) => (
                   <tr key={item.id}>
                     <td>{item.name}</td>
-                    <td>${item.basePrice.toFixed(2)}</td>
+                    <td>{'\u20B1'}{item.basePrice.toFixed(2)}</td>
                     <td>
                       <span
                         className={

@@ -72,6 +72,9 @@ export interface OrderItem {
   addOns: OrderItemAddOn[];
   station: StationType;
   isDone: boolean;
+  promoId?: string; // links this item to a promo
+  promoName?: string; // e.g. "B1T1 Mango Cloud"
+  isFreeItem?: boolean; // true for the free item in BOGO
 }
 
 export interface Order {
@@ -94,9 +97,13 @@ export interface Promo {
   id: string;
   name: string;
   type: PromoType;
-  conditions: Record<string, unknown>;
+  description?: string;
+  poster?: string; // base64 data URL or image URL
+  promoPrice: number; // override price for the promo (e.g. ₱69 for B1T1)
+  eligibleItems: string[]; // menu item IDs that can be used with this promo
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string
   isActive: boolean;
-  categories: string[];
 }
 
 export interface User {

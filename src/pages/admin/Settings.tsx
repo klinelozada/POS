@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getSettings, updateSettings, setPin, type PinType } from '../../services/adminService';
 import { getCategories } from '../../services/menuService';
-import { uploadImage } from '../../services/storageService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import type { Category, StationType } from '../../types';
@@ -139,15 +138,20 @@ export default function Settings() {
     const setUploading = type === 'gcash' ? setUploadingGcash : setUploadingInstapay;
     setUploading(true);
     try {
-      const path = `payment-qr/${type}-qr.${file.name.split('.').pop() || 'png'}`;
-      const url = await uploadImage(path, file);
+      // Convert to base64 data URL (stored directly in Firestore, no Storage needed)
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
       const field = type === 'gcash' ? 'gcashQrUrl' : 'instapayQrUrl';
-      await updateSettings({ [field]: url });
-      if (type === 'gcash') setGcashQrUrl(url);
-      else setInstapayQrUrl(url);
+      await updateSettings({ [field]: dataUrl });
+      if (type === 'gcash') setGcashQrUrl(dataUrl);
+      else setInstapayQrUrl(dataUrl);
       toast.success(`${type === 'gcash' ? 'GCash' : 'Instapay'} QR uploaded.`);
-    } catch {
-      toast.error('Failed to upload QR code.');
+    } catch (err) {
+      toast.error(`Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setUploading(false);
     }

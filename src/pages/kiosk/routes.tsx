@@ -11,6 +11,7 @@ import Checkout from './Checkout';
 import OrderConfirmed from './OrderConfirmed';
 import MyOrders from './MyOrders';
 import PayFirst from './PayFirst';
+import PromoDetail from './PromoDetail';
 
 function KioskContent() {
   return (
@@ -19,6 +20,7 @@ function KioskContent() {
       <Route path="welcome" element={<Welcome />} />
       <Route path="menu" element={<MenuBrowse />} />
       <Route path="menu/:id" element={<ItemDetail />} />
+      <Route path="promo/:id" element={<PromoDetail />} />
       <Route path="cart" element={<Cart />} />
       <Route path="checkout" element={<Checkout />} />
       <Route path="confirmed" element={<OrderConfirmed />} />

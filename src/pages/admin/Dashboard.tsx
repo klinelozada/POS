@@ -43,9 +43,9 @@ export default function Dashboard() {
           <div className={styles.statLabel}>Today's Orders</div>
         </div>
         <div className={styles.statCard}>
-          <span className={`material-symbols-rounded ${styles.statIcon}`}>attach_money</span>
+          <span className={`material-symbols-rounded ${styles.statIcon}`}>payments</span>
           <div className={styles.statValue}>
-            ${(stats?.todayRevenue ?? 0).toFixed(2)}
+            {'\u20B1'}{(stats?.todayRevenue ?? 0).toFixed(2)}
           </div>
           <div className={styles.statLabel}>Revenue</div>
         </div>
@@ -83,7 +83,7 @@ export default function Dashboard() {
                   <td>#{order.orderNumber}</td>
                   <td>{order.type}</td>
                   <td>{order.items?.length ?? 0}</td>
-                  <td>${order.total?.toFixed(2)}</td>
+                  <td>{'\u20B1'}{order.total?.toFixed(2)}</td>
                   <td>
                     <StatusBadge status={order.status} />
                   </td>

@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback, useMemo, type MouseEvent } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, type MouseEvent } from 'react';
 import {
   getPromos,
   createPromo,
   updatePromo,
 } from '../../services/adminService';
+import { getMenuItems } from '../../services/menuService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import type { Promo, PromoType } from '../../types';
+import type { Promo, PromoType, MenuItem } from '../../types';
 import styles from './Promos.module.css';
 import toast from 'react-hot-toast';
 
@@ -16,29 +17,43 @@ interface PromoFormData {
   name: string;
   type: PromoType;
   description: string;
+  promoPrice: string;
+  eligibleItems: string[];
+  startDate: string;
+  endDate: string;
+  poster: string;
   isActive: boolean;
 }
 
 const emptyForm: PromoFormData = {
   name: '',
-  type: 'discount',
+  type: 'bogo',
   description: '',
+  promoPrice: '',
+  eligibleItems: [],
+  startDate: '',
+  endDate: '',
+  poster: '',
   isActive: true,
 };
 
 export default function Promos() {
   const [promos, setPromos] = useState<Promo[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<PromoFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
+  const posterInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const data = await getPromos();
+    const [data, items] = await Promise.all([getPromos(), getMenuItems()]);
     setPromos(data);
+    setMenuItems(items);
     setLoading(false);
   }, []);
 
@@ -64,6 +79,7 @@ export default function Promos() {
   const openNew = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setItemSearch('');
     setShowModal(true);
   };
 
@@ -72,25 +88,50 @@ export default function Promos() {
     setForm({
       name: promo.name,
       type: promo.type,
-      description: (promo.conditions as { description?: string })?.description ?? '',
+      description: promo.description ?? '',
+      promoPrice: promo.promoPrice?.toString() ?? '',
+      eligibleItems: promo.eligibleItems ?? [],
+      startDate: promo.startDate ?? '',
+      endDate: promo.endDate ?? '',
+      poster: promo.poster ?? '',
       isActive: promo.isActive,
     });
+    setItemSearch('');
     setShowModal(true);
   };
 
+  const handlePosterUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, poster: reader.result as string }));
+    reader.readAsDataURL(file);
+  };
+
+  const toggleItem = (itemId: string) => {
+    setForm((f) => ({
+      ...f,
+      eligibleItems: f.eligibleItems.includes(itemId)
+        ? f.eligibleItems.filter((id) => id !== itemId)
+        : [...f.eligibleItems, itemId],
+    }));
+  };
+
   const handleSave = async () => {
-    if (!form.name.trim()) {
-      toast.error('Name is required.');
-      return;
-    }
+    if (!form.name.trim()) { toast.error('Name is required.'); return; }
+    if (!form.promoPrice || parseFloat(form.promoPrice) <= 0) { toast.error('Promo price is required.'); return; }
+    if (form.eligibleItems.length === 0) { toast.error('Select at least one eligible item.'); return; }
+
     setSaving(true);
     try {
-      const data = {
+      const data: Omit<Promo, 'id'> = {
         name: form.name.trim(),
         type: form.type,
-        conditions: { description: form.description.trim() },
+        description: form.description.trim() || undefined,
+        promoPrice: parseFloat(form.promoPrice),
+        eligibleItems: form.eligibleItems,
         isActive: form.isActive,
-        categories: [],
+        ...(form.poster ? { poster: form.poster } : {}),
+        ...(form.startDate ? { startDate: form.startDate } : {}),
+        ...(form.endDate ? { endDate: form.endDate } : {}),
       };
 
       if (editingId) {
@@ -117,6 +158,12 @@ export default function Promos() {
     };
     return map[type];
   };
+
+  const getItemName = (id: string) => menuItems.find((m) => m.id === id)?.name ?? id;
+
+  const filteredItems = itemSearch
+    ? menuItems.filter((m) => m.name.toLowerCase().includes(itemSearch.toLowerCase()))
+    : menuItems;
 
   if (loading) return <LoadingSpinner />;
 
@@ -156,6 +203,9 @@ export default function Promos() {
               className={styles.card}
               onClick={() => openEdit(promo)}
             >
+              {promo.poster && (
+                <img src={promo.poster} alt={promo.name} className={styles.cardPoster} />
+              )}
               <div className={styles.cardHeader}>
                 <span className={styles.cardName}>{promo.name}</span>
                 <span className={`${styles.typeBadge} ${badgeClass(promo.type)}`}>
@@ -163,12 +213,12 @@ export default function Promos() {
                 </span>
               </div>
               <div className={styles.cardDescription}>
-                {(promo.conditions as { description?: string })?.description ||
-                  'No description'}
+                {'\u20B1'}{promo.promoPrice?.toFixed(2) ?? '0.00'}
+                {promo.description ? ` — ${promo.description}` : ''}
               </div>
               <div className={styles.cardFooter}>
                 <span style={{ fontSize: 13, color: 'var(--color-foreground-muted)' }}>
-                  {promo.isActive ? 'Active' : 'Inactive'}
+                  {promo.eligibleItems?.length ?? 0} items · {promo.isActive ? 'Active' : 'Inactive'}
                 </span>
                 <button
                   className={`${styles.toggle} ${promo.isActive ? styles.toggleActive : ''}`}
@@ -189,29 +239,62 @@ export default function Promos() {
               {editingId ? 'Edit Promo' : 'Add Promo'}
             </h2>
 
+            {/* Poster */}
+            <div className={styles.field}>
+              <label className={styles.label}>Poster Image</label>
+              {form.poster && (
+                <img src={form.poster} alt="Poster" className={styles.posterPreview} />
+              )}
+              <input
+                ref={posterInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handlePosterUpload(file);
+                  e.target.value = '';
+                }}
+              />
+              <Button size="sm" variant="secondary" onClick={() => posterInputRef.current?.click()}>
+                {form.poster ? 'Replace Poster' : 'Upload Poster'}
+              </Button>
+            </div>
+
             <div className={styles.field}>
               <label className={styles.label}>Name *</label>
               <input
                 className={styles.input}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Promo name"
+                placeholder="e.g. Mango Cloud B1T1"
               />
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.label}>Type</label>
-              <select
-                className={styles.select}
-                value={form.type}
-                onChange={(e) =>
-                  setForm({ ...form, type: e.target.value as PromoType })
-                }
-              >
-                <option value="bogo">BOGO</option>
-                <option value="discount">Discount</option>
-                <option value="bundle">Bundle</option>
-              </select>
+            <div className={styles.fieldRow}>
+              <div className={styles.field}>
+                <label className={styles.label}>Type</label>
+                <select
+                  className={styles.select}
+                  value={form.type}
+                  onChange={(e) => setForm({ ...form, type: e.target.value as PromoType })}
+                >
+                  <option value="bogo">BOGO (Buy 1 Take 1)</option>
+                  <option value="discount">Discount</option>
+                  <option value="bundle">Bundle</option>
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>Promo Price *</label>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  value={form.promoPrice}
+                  onChange={(e) => setForm({ ...form, promoPrice: e.target.value })}
+                  placeholder="69"
+                />
+              </div>
             </div>
 
             <div className={styles.field}>
@@ -219,11 +302,63 @@ export default function Promos() {
               <textarea
                 className={styles.textarea}
                 value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Promo description..."
               />
+            </div>
+
+            <div className={styles.fieldRow}>
+              <div className={styles.field}>
+                <label className={styles.label}>Start Date</label>
+                <input
+                  className={styles.input}
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>End Date</label>
+                <input
+                  className={styles.input}
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Eligible Items */}
+            <div className={styles.field}>
+              <label className={styles.label}>Eligible Items *</label>
+              {form.eligibleItems.length > 0 && (
+                <div className={styles.selectedItems}>
+                  {form.eligibleItems.map((id) => (
+                    <span key={id} className={styles.selectedChip} onClick={() => toggleItem(id)}>
+                      {getItemName(id)} ×
+                    </span>
+                  ))}
+                </div>
+              )}
+              <input
+                className={styles.input}
+                value={itemSearch}
+                onChange={(e) => setItemSearch(e.target.value)}
+                placeholder="Search menu items..."
+              />
+              <div className={styles.itemList}>
+                {filteredItems.slice(0, 20).map((item) => (
+                  <label key={item.id} className={styles.itemOption}>
+                    <input
+                      type="checkbox"
+                      checked={form.eligibleItems.includes(item.id)}
+                      onChange={() => toggleItem(item.id)}
+                    />
+                    <span>{item.name}</span>
+                    <span className={styles.itemPrice}>{'\u20B1'}{item.basePrice}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className={styles.toggleRow}>

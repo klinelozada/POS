@@ -487,6 +487,11 @@ export default function SoloCounter() {
                       <div>
                         <div className={`${styles.checklistName} ${item.isDone ? styles.checklistDone : ''}`}>
                           {item.name}
+                          {item.promoName && (
+                            <span style={{ fontSize: 10, fontWeight: 600, color: '#1565C0', background: '#E3F2FD', padding: '1px 5px', borderRadius: 6, marginLeft: 4 }}>
+                              {item.isFreeItem ? 'FREE' : item.promoName}
+                            </span>
+                          )}
                         </div>
                         {item.variant && (
                           <div className={styles.checklistVariant}>{item.variant}</div>

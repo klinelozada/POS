@@ -1,0 +1,191 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-surface-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-secondary);
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--color-foreground-primary);
+}
+
+.headerTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+}
+
+.poster {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  background: #f5f0eb;
+}
+
+.promoInfo {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.promoName {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-foreground-primary);
+}
+
+.promoPrice {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-accent-primary);
+}
+
+.promoDesc {
+  font-size: 14px;
+  color: var(--color-foreground-secondary);
+  line-height: 1.4;
+}
+
+.promoBadge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px 12px;
+  background: #E3F2FD;
+  color: #1565C0;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.selectSection {
+  padding: 0 20px 20px;
+  flex: 1;
+}
+
+.selectLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground-secondary);
+  margin-bottom: 12px;
+}
+
+.itemGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.itemCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border-subtle);
+  background: var(--color-surface-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.itemCard:hover {
+  border-color: var(--color-accent-primary);
+}
+
+.itemCardSelected {
+  border-color: var(--color-accent-primary);
+  background: #FFF8F0;
+}
+
+.itemPhoto {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-primary);
+}
+
+.itemPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemName {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-foreground-primary);
+}
+
+.checkMark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-secondary);
+}
+
+.addBtn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-primary);
+  cursor: pointer;
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addedCheck {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addedText {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+  padding-bottom: 40px;
+}

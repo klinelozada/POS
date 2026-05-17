@@ -161,7 +161,7 @@ export default function MenuManagement() {
               <div className={styles.detailField}>
                 <span className={styles.detailLabel}>Base Price</span>
                 <span className={styles.detailValue}>
-                  ${selectedItem.basePrice.toFixed(2)}
+                  {'\u20B1'}{selectedItem.basePrice.toFixed(2)}
                 </span>
               </div>
               <div className={styles.detailField}>
@@ -187,7 +187,7 @@ export default function MenuManagement() {
                   <span className={styles.detailLabel}>Variants</span>
                   {selectedItem.variants.map((v, i) => (
                     <span key={i} className={styles.detailValue}>
-                      {v.name} (+${v.priceAdd.toFixed(2)})
+                      {v.name} (+{'\u20B1'}{v.priceAdd.toFixed(2)})
                     </span>
                   ))}
                 </div>

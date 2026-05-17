@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMenu } from '../../hooks/useMenu';
 import { useCartStore } from '../../stores/cartStore';
 import { useBasePath } from '../../hooks/useBasePath';
+import { getPromos } from '../../services/adminService';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { getMenuItemImage, getCategoryImage } from '../../utils/menuImages';
+import type { Promo } from '../../types';
 import styles from './MenuBrowse.module.css';
 
 function renderCatIcon(icon: string, size = 20) {
@@ -21,6 +23,20 @@ export default function MenuBrowse() {
   const orderType = useCartStore((s) => s.orderType);
   const cartItems = useCartStore((s) => s.items);
   const total = useCartStore((s) => s.total);
+
+  const [promos, setPromos] = useState<Promo[]>([]);
+
+  useEffect(() => {
+    getPromos().then((all) => {
+      const now = new Date().toISOString().split('T')[0];
+      setPromos(all.filter((p) => {
+        if (!p.isActive) return false;
+        if (p.startDate && now < p.startDate) return false;
+        if (p.endDate && now > p.endDate) return false;
+        return true;
+      }));
+    }).catch(() => {});
+  }, []);
 
   const activeCategories = categories.filter((c) => c.isActive);
 
@@ -57,6 +73,12 @@ export default function MenuBrowse() {
   useEffect(() => {
     const catParam = searchParams.get('cat');
     if (!catParam || topLevel.length === 0) return;
+
+    if (catParam === '__promos') {
+      setSelectedParentId('__promos');
+      setSearchParams({}, { replace: true });
+      return;
+    }
 
     // Check if it's a top-level category
     const isTopLevel = topLevel.find((c) => c.id === catParam);
@@ -175,6 +197,23 @@ export default function MenuBrowse() {
             <div className={styles.gridTitle}>Our Menu</div>
             <div className={styles.gridSubtitle}>What are you craving today?</div>
             <div className={styles.categoryGrid}>
+              {promos.length > 0 && (
+                <div
+                  className={styles.categoryCard}
+                  onClick={() => handleCategorySelect('__promos')}
+                >
+                  <div className={styles.categoryCardImage}>
+                    {promos[0].poster ? (
+                      <img src={promos[0].poster} alt="Promos" />
+                    ) : (
+                      <div className={styles.categoryCardIcon}>
+                        <span className="material-symbols-rounded" style={{ fontSize: 48 }}>local_offer</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.categoryCardName}>Promos</div>
+                </div>
+              )}
               {topLevel.map((cat) => {
                 const img = getCatCardImage(cat);
                 return (
@@ -225,7 +264,49 @@ export default function MenuBrowse() {
 
             {/* Items content */}
             <div className={styles.content}>
-              {displayCategory && (
+              {selectedParentId === '__promos' ? (
+                <>
+                  <div className={styles.contentHeader}>
+                    <button className={styles.backToGrid} onClick={handleBackToGrid}>
+                      <span className="material-symbols-rounded" style={{ fontSize: 18 }}>grid_view</span>
+                      All Categories
+                    </button>
+                  </div>
+                  <div className={styles.categoryTitle}>Promos</div>
+                  {promos.length > 0 ? (
+                    <div className={styles.grid}>
+                      {promos.map((promo) => (
+                        <div
+                          key={promo.id}
+                          className={styles.itemCard}
+                          onClick={() => navigate(`${base}/promo/${promo.id}`)}
+                        >
+                          <div className={styles.itemPhoto}>
+                            {promo.poster ? (
+                              <img src={promo.poster} alt={promo.name} />
+                            ) : (
+                              <span className="material-symbols-rounded" style={{ fontSize: 32, color: 'var(--color-foreground-muted)' }}>
+                                local_offer
+                              </span>
+                            )}
+                          </div>
+                          <div className={styles.itemInfo}>
+                            <div className={styles.itemName}>{promo.name}</div>
+                            {promo.description && (
+                              <div className={styles.itemDesc}>{promo.description}</div>
+                            )}
+                            <div className={styles.itemPrice}>
+                              {'\u20B1'}{promo.promoPrice.toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.empty}>No active promos</div>
+                  )}
+                </>
+              ) : displayCategory ? (
                 <>
                   <div className={styles.contentHeader}>
                     <button className={styles.backToGrid} onClick={handleBackToGrid}>
@@ -291,7 +372,7 @@ export default function MenuBrowse() {
                     <div className={styles.empty}>No items in this category yet</div>
                   )}
                 </>
-              )}
+              ) : null}
             </div>
           </div>
         )}

@@ -56,6 +56,8 @@ export default function Checkout() {
         addOns: cartItem.addOns,
         station: cartItem.station,
         isDone: false,
+        ...(cartItem.promoId ? { promoId: cartItem.promoId, promoName: cartItem.promoName } : {}),
+        ...(cartItem.isFreeItem ? { isFreeItem: true } : {}),
       }));
 
       const orderId = await createOrder({
