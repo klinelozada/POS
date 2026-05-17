@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMenuItem, getAddOnGroups, getCategories } from '../../services/menuService';
 import { useCartStore } from '../../stores/cartStore';
@@ -18,9 +18,14 @@ export default function ItemDetail() {
   const [categoryName, setCategoryName] = useState<string>('');
   const [addOnGroups, setAddOnGroups] = useState<AddOnGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  // Single-variant mode
   const [selectedVariant, setSelectedVariant] = useState<string>('');
+  // Multi-group variant mode
+  const [groupSelections, setGroupSelections] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
   const [selectedAddOns, setSelectedAddOns] = useState<OrderItemAddOn[]>([]);
+
+  const hasVariantGroups = !!(item?.variantGroups && item.variantGroups.length > 0 && item.priceMatrix);
 
   useEffect(() => {
     async function load() {
@@ -35,15 +40,44 @@ export default function ItemDetail() {
       if (menuItem) {
         const cat = cats.find((c) => c.id === menuItem.categoryId);
         setCategoryName(cat?.name ?? '');
-      }
-      if (menuItem?.variants && menuItem.variants.length > 0) {
-        setSelectedVariant(menuItem.variants[0].name);
+
+        // Initialize variant selections
+        if (menuItem.variantGroups && menuItem.variantGroups.length > 0 && menuItem.priceMatrix) {
+          // Multi-group: default to first option of each group
+          const defaults: Record<string, string> = {};
+          menuItem.variantGroups.forEach((g) => {
+            defaults[g.label] = g.options[0];
+          });
+          setGroupSelections(defaults);
+        } else if (menuItem.variants && menuItem.variants.length > 0) {
+          setSelectedVariant(menuItem.variants[0].name);
+        }
       }
       setAddOnGroups(groups);
       setLoading(false);
     }
     load();
   }, [id]);
+
+  // Compute price based on variant mode
+  const unitPrice = useMemo(() => {
+    if (!item) return 0;
+    if (hasVariantGroups && item.priceMatrix) {
+      const key = item.variantGroups!.map((g) => groupSelections[g.label] ?? g.options[0]).join('|');
+      return item.priceMatrix[key] ?? item.basePrice;
+    }
+    const variantAdd = item.variants.find((v) => v.name === selectedVariant)?.priceAdd ?? 0;
+    return item.basePrice + variantAdd;
+  }, [item, hasVariantGroups, groupSelections, selectedVariant]);
+
+  // Compute variant string for cart
+  const variantString = useMemo(() => {
+    if (!item) return '';
+    if (hasVariantGroups) {
+      return item.variantGroups!.map((g) => groupSelections[g.label] ?? g.options[0]).join(', ');
+    }
+    return selectedVariant;
+  }, [item, hasVariantGroups, groupSelections, selectedVariant]);
 
   if (loading) {
     return (
@@ -69,9 +103,7 @@ export default function ItemDetail() {
     );
   }
 
-  const variantAdd = item.variants.find((v) => v.name === selectedVariant)?.priceAdd ?? 0;
   const addOnsTotal = selectedAddOns.reduce((sum, a) => sum + a.price, 0);
-  const unitPrice = item.basePrice + variantAdd;
   const totalPrice = (unitPrice + addOnsTotal) * quantity;
 
   // Filter add-on groups applicable to this item's category
@@ -93,7 +125,7 @@ export default function ItemDetail() {
     addItem({
       menuItemId: item.id,
       name: item.name,
-      variant: selectedVariant,
+      variant: variantString,
       quantity,
       price: unitPrice,
       addOns: selectedAddOns,
@@ -124,7 +156,26 @@ export default function ItemDetail() {
         <div className={styles.itemDesc}>{item.description ?? ''}</div>
         <div className={styles.itemPrice}>{'\u20B1'}{unitPrice.toFixed(2)}</div>
 
-        {item.variants.length > 0 && (
+        {/* Multi-group variant selectors (e.g., Size + Flavor) */}
+        {hasVariantGroups && item.variantGroups!.map((group) => (
+          <div key={group.label}>
+            <div className={styles.sectionLabel}>{group.label}</div>
+            <div className={styles.variantGroup}>
+              {group.options.map((opt) => (
+                <button
+                  key={opt}
+                  className={groupSelections[group.label] === opt ? styles.variantBtnActive : styles.variantBtn}
+                  onClick={() => setGroupSelections((prev) => ({ ...prev, [group.label]: opt }))}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Single-variant selector (legacy) */}
+        {!hasVariantGroups && item.variants.length > 0 && (
           <>
             <div className={styles.sectionLabel}>Size</div>
             <div className={styles.variantGroup}>

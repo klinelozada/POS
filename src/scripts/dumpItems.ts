@@ -9,7 +9,10 @@ async function main() {
   console.log('=== MENU ITEMS (' + snap.size + ') ===');
   snap.docs.forEach(d => {
     const data = d.data();
-    console.log(`${d.id} | ${data.name} | photo: ${data.photo ? 'YES' : 'NO'} | cat: ${data.categoryId}`);
+    const fields = Object.keys(data).sort().join(', ');
+    const variants = data.variants ? JSON.stringify(data.variants) : 'none';
+    const basePrice = data.basePrice ?? data.price ?? '??';
+    console.log(`${data.name} | basePrice: ${basePrice} | variants: ${variants} | fields: [${fields}]`);
   });
 
   console.log('');

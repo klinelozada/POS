@@ -33,6 +33,11 @@ export interface MenuItemVariant {
   priceAdd: number;
 }
 
+export interface VariantGroup {
+  label: string;
+  options: string[];
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -41,6 +46,8 @@ export interface MenuItem {
   description?: string;
   photo?: string; // Firebase Storage URL
   variants: MenuItemVariant[];
+  variantGroups?: VariantGroup[]; // multi-dimensional variants (e.g., Size + Flavor)
+  priceMatrix?: Record<string, number>; // "Solo|Regular" → 35
   isAvailable: boolean;
   station: StationType;
   prepInstructions?: string; // HTML rich text
