@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getSettings, updateSettings, setPin, type PinType } from '../../services/adminService';
 import { getCategories } from '../../services/menuService';
+import { uploadImage } from '../../services/storageService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import type { Category, StationType } from '../../types';
@@ -20,6 +21,14 @@ export default function Settings() {
   // Order settings
   const [orderNumber, setOrderNumber] = useState('0');
   const [requirePayFirst, setRequirePayFirst] = useState(true);
+
+  // Digital payments
+  const [gcashQrUrl, setGcashQrUrl] = useState('');
+  const [instapayQrUrl, setInstapayQrUrl] = useState('');
+  const [uploadingGcash, setUploadingGcash] = useState(false);
+  const [uploadingInstapay, setUploadingInstapay] = useState(false);
+  const gcashInputRef = useRef<HTMLInputElement>(null);
+  const instapayInputRef = useRef<HTMLInputElement>(null);
 
   // Station routing
   const [routing, setRouting] = useState<Record<string, StationType>>({});
@@ -52,6 +61,8 @@ export default function Settings() {
         setMobileOrderUrl(settings.mobileOrderUrl ?? '');
         setOrderNumber((settings.currentOrderNumber ?? 0).toString());
         setRequirePayFirst(settings.requirePayFirst !== false);
+        setGcashQrUrl(settings.gcashQrUrl ?? '');
+        setInstapayQrUrl(settings.instapayQrUrl ?? '');
         setRouting(settings.stationRouting ?? {});
         setPins({
           adminPin: settings.adminPin ?? '',
@@ -112,6 +123,24 @@ export default function Settings() {
       toast.error('Failed to save.');
     } finally {
       setSavingRouting(false);
+    }
+  };
+
+  const handleUploadQr = async (type: 'gcash' | 'instapay', file: File) => {
+    const setUploading = type === 'gcash' ? setUploadingGcash : setUploadingInstapay;
+    setUploading(true);
+    try {
+      const path = `payment-qr/${type}-qr.${file.name.split('.').pop() || 'png'}`;
+      const url = await uploadImage(path, file);
+      const field = type === 'gcash' ? 'gcashQrUrl' : 'instapayQrUrl';
+      await updateSettings({ [field]: url });
+      if (type === 'gcash') setGcashQrUrl(url);
+      else setInstapayQrUrl(url);
+      toast.success(`${type === 'gcash' ? 'GCash' : 'Instapay'} QR uploaded.`);
+    } catch {
+      toast.error('Failed to upload QR code.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -204,6 +233,68 @@ export default function Settings() {
           <Button size="sm" onClick={handleSaveOrder} disabled={savingOrder}>
             {savingOrder ? 'Saving...' : 'Save Order Settings'}
           </Button>
+        </div>
+      </div>
+
+      {/* Digital Payments */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Digital Payments</h2>
+        <p className={styles.sectionDesc}>
+          Upload QR code images for GCash and Instapay. These will be shown to customers during payment at the POS.
+        </p>
+
+        {/* GCash */}
+        <div className={styles.pinRow}>
+          <div className={styles.pinInfo}>
+            <label className={styles.label}>GCash QR Code</label>
+            <span className={styles.pinDesc}>Upload your GCash payment QR code image</span>
+          </div>
+          <div className={styles.pinInputGroup}>
+            {gcashQrUrl && (
+              <img src={gcashQrUrl} alt="GCash QR" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 4, border: '1px solid var(--color-border-subtle)' }} />
+            )}
+            <input
+              ref={gcashInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleUploadQr('gcash', file);
+                e.target.value = '';
+              }}
+            />
+            <Button size="sm" variant="secondary" onClick={() => gcashInputRef.current?.click()} disabled={uploadingGcash}>
+              {uploadingGcash ? 'Uploading...' : gcashQrUrl ? 'Replace' : 'Upload'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Instapay */}
+        <div className={styles.pinRow}>
+          <div className={styles.pinInfo}>
+            <label className={styles.label}>Instapay QR Code</label>
+            <span className={styles.pinDesc}>Upload your Instapay payment QR code image</span>
+          </div>
+          <div className={styles.pinInputGroup}>
+            {instapayQrUrl && (
+              <img src={instapayQrUrl} alt="Instapay QR" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 4, border: '1px solid var(--color-border-subtle)' }} />
+            )}
+            <input
+              ref={instapayInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleUploadQr('instapay', file);
+                e.target.value = '';
+              }}
+            />
+            <Button size="sm" variant="secondary" onClick={() => instapayInputRef.current?.click()} disabled={uploadingInstapay}>
+              {uploadingInstapay ? 'Uploading...' : instapayQrUrl ? 'Replace' : 'Upload'}
+            </Button>
+          </div>
         </div>
       </div>
 

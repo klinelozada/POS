@@ -5,7 +5,7 @@ import { useMenu } from '../../hooks/useMenu';
 import { useAuth } from '../../hooks/useAuth';
 import { useStoreStatus } from '../../hooks/useStoreStatus';
 import { updateOrder, updateOrderItemStatus } from '../../services/orderService';
-import { getUserRole } from '../../services/adminService';
+import { getUserRole, getSettings } from '../../services/adminService';
 import { getMenuItemImage } from '../../utils/menuImages';
 import { ConfirmDialog, PinDialog } from '../../components';
 import type { Order, OrderItem, PaymentMethod, MenuItem, UserRole } from '../../types';
@@ -50,6 +50,11 @@ export default function SoloCounter() {
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
+  // Digital payment state
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [gcashQrUrl, setGcashQrUrl] = useState('');
+  const [instapayQrUrl, setInstapayQrUrl] = useState('');
+
   const storeStatus = useStoreStatus();
 
   // Redirect to login if store was closed from another device
@@ -66,6 +71,14 @@ export default function SoloCounter() {
       getUserRole(user.uid).then((role) => setUserRole(role));
     }
   }, [user?.uid]);
+
+  // Load digital payment QR URLs
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s?.gcashQrUrl) setGcashQrUrl(s.gcashQrUrl);
+      if (s?.instapayQrUrl) setInstapayQrUrl(s.instapayQrUrl);
+    }).catch(() => {});
+  }, []);
 
   const isAdmin = userRole === 'super_admin';
 
@@ -158,9 +171,12 @@ export default function SoloCounter() {
   }, []);
 
   const currentMethod = paymentMethodOverride ?? selectedOrder?.paymentMethod ?? 'cash';
+  const isDigital = currentMethod === 'gcash' || currentMethod === 'instapay';
   const cashAmount = parseFloat(cashTendered) || 0;
   const change = selectedOrder ? cashAmount - selectedOrder.total : 0;
-  const canComplete = currentMethod === 'card' || (currentMethod === 'cash' && cashAmount >= (selectedOrder?.total ?? 0));
+  const canComplete = currentMethod === 'card'
+    || (currentMethod === 'cash' && cashAmount >= (selectedOrder?.total ?? 0))
+    || (isDigital && referenceNumber.trim().length > 0);
 
   const handleCompletePayment = async () => {
     if (!selectedOrder || !canComplete) return;
@@ -173,9 +189,11 @@ export default function SoloCounter() {
       await updateOrder(selectedOrder.id, {
         paymentMethod: currentMethod,
         paymentStatus: 'paid',
+        ...(isDigital && referenceNumber.trim() ? { referenceNumber: referenceNumber.trim() } : {}),
         // Only mark completed if all items are also done
         ...(allItemsDone ? { status: 'completed' } : {}),
       });
+      setReferenceNumber('');
       setPanelMode('receipt');
     } catch (error) {
       console.error('Failed to complete payment:', error);
@@ -382,7 +400,7 @@ export default function SoloCounter() {
                 </div>
                 <div className={styles.receiptMeta}>
                   <span>{receiptOrder.type === 'dine-in' ? 'Dine In' : 'Take Out'}</span>
-                  <span>{currentMethod === 'cash' ? 'Cash' : 'Card'}</span>
+                  <span>{currentMethod === 'gcash' ? 'GCash' : currentMethod === 'instapay' ? 'Instapay' : currentMethod === 'cash' ? 'Cash' : 'Card'}</span>
                 </div>
                 <div className={styles.receiptDivider} />
                 {receiptOrder.items.map((item, i) => (
@@ -415,6 +433,12 @@ export default function SoloCounter() {
                       <span>{'\u20B1'}{receiptChange.toFixed(2)}</span>
                     </div>
                   </>
+                )}
+                {receiptOrder.referenceNumber && (
+                  <div className={styles.receiptRow}>
+                    <span>Ref #</span>
+                    <span>{receiptOrder.referenceNumber}</span>
+                  </div>
                 )}
                 <div className={styles.receiptDivider} />
                 <div className={styles.receiptFooter}>Thank you for visiting Joe Street!</div>
@@ -602,6 +626,22 @@ export default function SoloCounter() {
                   >
                     Card
                   </button>
+                  {gcashQrUrl && (
+                    <button
+                      className={currentMethod === 'gcash' ? styles.payMethodBtnActive : styles.payMethodBtn}
+                      onClick={() => setPaymentMethodOverride('gcash')}
+                    >
+                      GCash
+                    </button>
+                  )}
+                  {instapayQrUrl && (
+                    <button
+                      className={currentMethod === 'instapay' ? styles.payMethodBtnActive : styles.payMethodBtn}
+                      onClick={() => setPaymentMethodOverride('instapay')}
+                    >
+                      Instapay
+                    </button>
+                  )}
                 </div>
 
                 {currentMethod === 'cash' && (
@@ -638,6 +678,29 @@ export default function SoloCounter() {
                   </>
                 )}
 
+                {isDigital && (
+                  <>
+                    <div className={styles.digitalQrSection}>
+                      <div className={styles.paySectionLabel}>
+                        Show this QR to customer
+                      </div>
+                      <img
+                        src={currentMethod === 'gcash' ? gcashQrUrl : instapayQrUrl}
+                        alt={`${currentMethod} QR`}
+                        className={styles.digitalQrImage}
+                      />
+                    </div>
+                    <div className={styles.paySectionLabel}>Reference Number</div>
+                    <input
+                      type="text"
+                      className={styles.cashInput}
+                      placeholder="Enter last digits of ref #..."
+                      value={referenceNumber}
+                      onChange={(e) => setReferenceNumber(e.target.value)}
+                    />
+                  </>
+                )}
+
                 <button
                   className={styles.completeBtn}
                   onClick={() => setShowPaymentConfirm(true)}
@@ -656,7 +719,7 @@ export default function SoloCounter() {
       {showPaymentConfirm && selectedOrder && (
         <ConfirmDialog
           title="Complete Payment"
-          message={`Complete payment of \u20B1${selectedOrder.total.toFixed(2)} for Order #${String(selectedOrder.orderNumber).padStart(3, '0')} via ${currentMethod === 'cash' ? 'Cash' : 'Card'}?`}
+          message={`Complete payment of \u20B1${selectedOrder.total.toFixed(2)} for Order #${String(selectedOrder.orderNumber).padStart(3, '0')} via ${currentMethod === 'gcash' ? 'GCash' : currentMethod === 'instapay' ? 'Instapay' : currentMethod === 'cash' ? 'Cash' : 'Card'}${isDigital && referenceNumber.trim() ? ` (Ref: ${referenceNumber.trim()})` : ''}?`}
           confirmLabel="Yes, Complete"
           variant="success"
           onConfirm={() => { setShowPaymentConfirm(false); handleCompletePayment(); }}

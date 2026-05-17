@@ -4,7 +4,7 @@ export type StationType = 'prep' | 'kitchen';
 
 export type OrderType = 'dine-in' | 'takeout';
 
-export type PaymentMethod = 'cash' | 'card';
+export type PaymentMethod = 'cash' | 'card' | 'gcash' | 'instapay';
 
 export type OrderStatus = 'new' | 'preparing' | 'completed' | 'cancelled';
 
@@ -85,6 +85,7 @@ export interface Order {
   status: OrderStatus;
   prepStatus: StationStatus;
   kitchenStatus: StationStatus;
+  referenceNumber?: string; // For digital payments (GCash/Instapay)
   createdAt: Timestamp;
   completedAt?: Timestamp;
 }
@@ -151,6 +152,8 @@ export interface Settings {
   kitchenPin?: string; // 4-digit PIN for kitchen station access
   mobileOrderUrl?: string; // Custom URL for QR code (defaults to window.location.origin/m)
   requirePayFirst?: boolean; // If true, customers must pay before placing another order (default: true)
+  gcashQrUrl?: string; // Firebase Storage URL for GCash QR code image
+  instapayQrUrl?: string; // Firebase Storage URL for Instapay QR code image
 }
 
 // Omit 'id' helper for creating new documents
