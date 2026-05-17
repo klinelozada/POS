@@ -81,6 +81,11 @@ export default function Checkout() {
 
       addCustomerOrderId(orderId);
 
+      // Request notification permission for order updates
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
       sessionStorage.setItem(
         'lastOrder',
         JSON.stringify({

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBasePath } from '../../hooks/useBasePath';
 import { getCustomerOrderIds } from '../../utils/customerSession';
@@ -12,17 +12,84 @@ export default function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  // Track notification state per order: 'new' | 'preparing' | 'ready'
+  const notifiedStateRef = useRef<Map<string, string>>(new Map());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const initialLoadRef = useRef(true);
+
+  const playSound = useCallback(() => {
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio('/sounds/order-notification.mp3');
+      }
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    } catch {}
+  }, []);
+
+  const sendNotification = useCallback((title: string, body: string) => {
+    playSound();
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          body,
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/icon-96x96.png',
+          tag: body, // prevent duplicate notifications
+        });
+      } catch {}
+    }
+  }, [playSound]);
+
+  const getOrderState = useCallback((order: Order): string => {
+    if (order.status === 'completed' || order.items.every((i) => i.isDone)) return 'ready';
+    if (order.items.some((i) => i.isDone)) return 'preparing';
+    return 'new';
+  }, []);
 
   useEffect(() => {
+    // Request notification permission on mount
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     const ids = getCustomerOrderIds();
     if (ids.length === 0) {
       setLoading(false);
+      initialLoadRef.current = false;
       return;
     }
+
+    let loadedCount = 0;
 
     // Subscribe to all customer orders in real-time
     const unsubscribes = ids.map((id) =>
       subscribeToOrder(id, (order) => {
+        loadedCount++;
+        const isInitialLoad = loadedCount <= ids.length && initialLoadRef.current;
+
+        if (order && !isInitialLoad) {
+          const newState = getOrderState(order);
+          const prevState = notifiedStateRef.current.get(id);
+          const orderNum = `#${String(order.orderNumber).padStart(3, '0')}`;
+
+          if (prevState !== newState) {
+            if (newState === 'preparing' && prevState !== 'preparing' && prevState !== 'ready') {
+              sendNotification('Order Being Prepared', `Order ${orderNum} is now being prepared`);
+            } else if (newState === 'ready') {
+              sendNotification('Order Ready for Pickup!', `Order ${orderNum} is ready for pickup!`);
+            }
+          }
+        }
+
+        if (order) {
+          notifiedStateRef.current.set(id, getOrderState(order));
+        }
+
+        if (isInitialLoad && loadedCount === ids.length) {
+          initialLoadRef.current = false;
+        }
+
         setOrders((prev) => {
           if (!order) return prev.filter((o) => o.id !== id);
           const idx = prev.findIndex((o) => o.id === id);
@@ -38,7 +105,7 @@ export default function MyOrders() {
     );
 
     return () => unsubscribes.forEach((unsub) => unsub());
-  }, []);
+  }, [getOrderState, sendNotification]);
 
   const sortedOrders = [...orders].sort((a, b) => {
     const aTime = a.createdAt?.toMillis?.() ?? 0;
