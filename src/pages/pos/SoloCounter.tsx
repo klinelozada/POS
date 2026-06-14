@@ -11,7 +11,7 @@ import { ConfirmDialog, PinDialog } from '../../components';
 import type { Order, OrderItem, PaymentMethod, MenuItem, UserRole } from '../../types';
 import styles from './SoloCounter.module.css';
 
-type PanelMode = 'prep' | 'payment' | 'receipt';
+type PanelMode = 'prep' | 'kitchen' | 'payment' | 'receipt';
 
 interface PromoGroupRow {
   type: 'promo';
@@ -167,8 +167,14 @@ export default function SoloCounter() {
   const activeOrders = orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled');
   // Pay: unpaid orders (can be in prep simultaneously)
   const payOrders = activeOrders.filter((o) => (o.paymentStatus ?? 'unpaid') === 'unpaid');
-  // Prep: items still being prepared (can be in pay simultaneously)
-  const prepOrders = activeOrders.filter((o) => !o.items.every((item) => item.isDone));
+  // Prep: orders with pending prep-station items
+  const prepOrders = activeOrders.filter((o) =>
+    o.items.some((item) => item.station === 'prep' && !item.isDone)
+  );
+  // Kitchen: orders with pending kitchen-station items
+  const kitchenOrders = activeOrders.filter((o) =>
+    o.items.some((item) => item.station === 'kitchen' && !item.isDone)
+  );
   // Done: fully completed (all items done + paid)
   const doneOrders = orders.filter((o) => o.status === 'completed');
 
@@ -184,11 +190,11 @@ export default function SoloCounter() {
     }
   }, [activeOrders.length, panelMode, navigate]);
 
-  // Auto-switch to payment mode when all items are done during prep (and still unpaid)
+  // Auto-switch to payment mode when all items are done during prep/kitchen (and still unpaid)
   useEffect(() => {
     if (
       selectedOrder &&
-      panelMode === 'prep' &&
+      (panelMode === 'prep' || panelMode === 'kitchen') &&
       selectedOrder.items.length > 0 &&
       selectedOrder.items.every((item) => item.isDone) &&
       (selectedOrder.paymentStatus ?? 'unpaid') === 'unpaid'
@@ -204,7 +210,7 @@ export default function SoloCounter() {
   useEffect(() => {
     if (
       selectedOrder &&
-      panelMode === 'prep' &&
+      (panelMode === 'prep' || panelMode === 'kitchen') &&
       selectedOrder.status === 'completed'
     ) {
       setSelectedOrderId(null);
@@ -222,7 +228,16 @@ export default function SoloCounter() {
     setPanelMode('prep');
     setPaymentMethodOverride(null);
     setCashTendered('');
-    const firstPending = order.items.findIndex((item) => !item.isDone);
+    const firstPending = order.items.findIndex((item) => item.station === 'prep' && !item.isDone);
+    setSelectedItemIndex(firstPending >= 0 ? firstPending : null);
+  };
+
+  const handleSelectKitchenOrder = (order: Order) => {
+    setSelectedOrderId(order.id);
+    setPanelMode('kitchen');
+    setPaymentMethodOverride(null);
+    setCashTendered('');
+    const firstPending = order.items.findIndex((item) => item.station === 'kitchen' && !item.isDone);
     setSelectedItemIndex(firstPending >= 0 ? firstPending : null);
   };
 
@@ -376,7 +391,7 @@ export default function SoloCounter() {
       <div className={styles.body}>
         {/* Left Column - Orders Queue */}
         <div className={styles.leftCol}>
-          <div className={showDone ? styles.sectionPane33 : styles.sectionPane50}>
+          <div className={showDone ? styles.sectionPane25 : styles.sectionPane33}>
             <div className={styles.sectionHeaderPay}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" /></svg>
               Pay ({payOrders.length})
@@ -401,20 +416,55 @@ export default function SoloCounter() {
 
           <div className={styles.dividerOrange} />
 
-          <div className={showDone ? styles.sectionPane33 : styles.sectionPane50}>
+          <div className={showDone ? styles.sectionPane25 : styles.sectionPane33}>
             <div className={styles.sectionHeaderPrep}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" /></svg>
               Prep ({prepOrders.length})
             </div>
             <div className={styles.sectionScroll}>
               {prepOrders.map((order) => {
-                const doneCount = order.items.filter((i) => i.isDone).length;
-                const totalCount = order.items.length;
+                const stationItems = order.items.filter((i) => i.station === 'prep');
+                const doneCount = stationItems.filter((i) => i.isDone).length;
+                const totalCount = stationItems.length;
                 return (
                   <div
                     key={order.id}
                     className={selectedOrderId === order.id && panelMode === 'prep' ? styles.orderItemSelected : styles.orderItem}
                     onClick={() => handleSelectPrepOrder(order)}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div className={styles.orderNum}>#{String(order.orderNumber).padStart(3, '0')}</div>
+                      <span className={(order.paymentStatus ?? 'unpaid') === 'paid' ? styles.paidBadge : styles.unpaidBadge}>
+                        {(order.paymentStatus ?? 'unpaid') === 'paid' ? 'Paid' : 'Unpaid'}
+                      </span>
+                    </div>
+                    <div className={styles.orderMeta}>
+                      <span>{formatTime(order.createdAt)}</span>
+                      <span className={styles.orderTotal}>{doneCount}/{totalCount}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className={styles.dividerOrange} />
+
+          <div className={showDone ? styles.sectionPane25 : styles.sectionPane33}>
+            <div className={styles.sectionHeaderKitchen}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" /></svg>
+              Kitchen ({kitchenOrders.length})
+            </div>
+            <div className={styles.sectionScroll}>
+              {kitchenOrders.map((order) => {
+                const stationItems = order.items.filter((i) => i.station === 'kitchen');
+                const doneCount = stationItems.filter((i) => i.isDone).length;
+                const totalCount = stationItems.length;
+                return (
+                  <div
+                    key={order.id}
+                    className={selectedOrderId === order.id && panelMode === 'kitchen' ? styles.orderItemSelected : styles.orderItem}
+                    onClick={() => handleSelectKitchenOrder(order)}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div className={styles.orderNum}>#{String(order.orderNumber).padStart(3, '0')}</div>
@@ -545,7 +595,7 @@ export default function SoloCounter() {
             <div style={{ fontSize: 32 }}>{'\u2615'}</div>
             <div>Select an order to view details</div>
           </div>
-        ) : panelMode === 'prep' ? (
+        ) : panelMode === 'prep' || panelMode === 'kitchen' ? (
           <>
             {/* Mid column - 50/50 photo + checklist */}
             <div className={styles.midCol}>
@@ -557,17 +607,21 @@ export default function SoloCounter() {
                 )}
               </div>
               <div className={styles.midChecklist}>
-                <div className={styles.priceBar}>{'\u20B1'}{selectedOrder.total.toFixed(2)}</div>
+                <div className={styles.priceBar}>
+                  {panelMode === 'kitchen' ? 'Kitchen' : 'Prep'} — {'\u20B1'}{selectedOrder.total.toFixed(2)}
+                </div>
                 <div className={styles.checklistScroll}>
                   {groupOrderItems(selectedOrder.items).map((row) => {
                     if (row.type === 'promo') {
+                      const stationItems = row.items.filter(({ item }) => item.station === panelMode);
+                      if (stationItems.length === 0) return null;
                       return (
                         <div key={row.promoId} className={styles.promoChecklistGroup}>
                           <div className={styles.promoChecklistHeader}>
                             <span className={styles.promoChecklistBadge}>B1T1</span>
                             <span className={styles.promoChecklistName}>{row.promoName}</span>
                           </div>
-                          {row.items.map(({ item, index }) => (
+                          {stationItems.map(({ item, index }) => (
                             <div
                               key={index}
                               className={`${styles.checklistItem} ${styles.checklistIndented} ${selectedItemIndex === index ? styles.checklistItemSelected : ''}`}
@@ -599,6 +653,7 @@ export default function SoloCounter() {
                       );
                     }
                     const { item, index } = row;
+                    if (item.station !== panelMode) return null;
                     return (
                       <div
                         key={index}
@@ -638,9 +693,9 @@ export default function SoloCounter() {
               </div>
             </div>
 
-            {/* Right column - prep instructions */}
+            {/* Right column - prep/kitchen instructions */}
             <div className={styles.rightCol}>
-              <div className={styles.prepHeader}>Prep Instructions</div>
+              <div className={styles.prepHeader}>{panelMode === 'kitchen' ? 'Kitchen' : 'Prep'} Instructions</div>
               {focusedItem && !focusedItem.isDone ? (
                 (() => {
                   const menuItem = menuItems.find((mi) => mi.id === focusedItem.menuItemId);

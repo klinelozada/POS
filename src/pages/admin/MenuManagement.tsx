@@ -84,32 +84,94 @@ export default function MenuManagement() {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.categorySidebar}>
-          <button
-            className={`${styles.catItem} ${selectedCatId === null ? styles.catItemActive : ''}`}
-            onClick={() => setSelectedCatId(null)}
-          >
-            <span className={`material-symbols-rounded ${styles.catIcon}`}>apps</span>
-            All
-          </button>
-          {sidebarItems.map(({ cat, depth }) => (
+        <div className={styles.leftColumn}>
+          <div className={styles.categorySidebar}>
             <button
-              key={cat.id}
-              className={`${styles.catItem} ${selectedCatId === cat.id ? styles.catItemActive : ''} ${depth > 0 ? styles.catItemChild : ''}`}
-              onClick={() => setSelectedCatId(cat.id)}
+              className={`${styles.catItem} ${selectedCatId === null ? styles.catItemActive : ''}`}
+              onClick={() => setSelectedCatId(null)}
             >
-              {depth > 0 ? (
-                <span className={styles.catChildIndent}>└</span>
-              ) : cat.icon && (
-                cat.icon.startsWith('fa-') ? (
-                  <i className={`fa-solid ${cat.icon} ${styles.catIcon}`} />
-                ) : (
-                  <span className={`material-symbols-rounded ${styles.catIcon}`}>{cat.icon}</span>
-                )
-              )}
-              {cat.name}
+              <span className={`material-symbols-rounded ${styles.catIcon}`}>apps</span>
+              All
             </button>
-          ))}
+            {sidebarItems.map(({ cat, depth }) => (
+              <button
+                key={cat.id}
+                className={`${styles.catItem} ${selectedCatId === cat.id ? styles.catItemActive : ''} ${depth > 0 ? styles.catItemChild : ''}`}
+                onClick={() => setSelectedCatId(cat.id)}
+              >
+                {depth > 0 ? (
+                  <span className={styles.catChildIndent}>└</span>
+                ) : cat.icon && (
+                  cat.icon.startsWith('fa-') ? (
+                    <i className={`fa-solid ${cat.icon} ${styles.catIcon}`} />
+                  ) : (
+                    <span className={`material-symbols-rounded ${styles.catIcon}`}>{cat.icon}</span>
+                  )
+                )}
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.detailPanel}>
+            {selectedItem ? (
+              <>
+                <h2 className={styles.detailTitle}>{selectedItem.name}</h2>
+                <div className={styles.detailField}>
+                  <span className={styles.detailLabel}>Category</span>
+                  <span className={styles.detailValue}>
+                    {getCategoryName(selectedItem.categoryId)}
+                  </span>
+                </div>
+                <div className={styles.detailField}>
+                  <span className={styles.detailLabel}>Base Price</span>
+                  <span className={styles.detailValue}>
+                    {'\u20B1'}{selectedItem.basePrice.toFixed(2)}
+                  </span>
+                </div>
+                <div className={styles.detailField}>
+                  <span className={styles.detailLabel}>Station</span>
+                  <span className={styles.detailValue}>{selectedItem.station}</span>
+                </div>
+                <div className={styles.detailField}>
+                  <span className={styles.detailLabel}>Available</span>
+                  <span className={styles.detailValue}>
+                    {selectedItem.isAvailable ? 'Yes' : 'No'}
+                  </span>
+                </div>
+                {selectedItem.description && (
+                  <div className={styles.detailField}>
+                    <span className={styles.detailLabel}>Description</span>
+                    <span className={styles.detailValue}>
+                      {selectedItem.description}
+                    </span>
+                  </div>
+                )}
+                {selectedItem.variants.length > 0 && (
+                  <div className={styles.detailField}>
+                    <span className={styles.detailLabel}>Variants</span>
+                    {selectedItem.variants.map((v, i) => (
+                      <span key={i} className={styles.detailValue}>
+                        {v.name} (+{'\u20B1'}{v.priceAdd.toFixed(2)})
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className={styles.detailActions}>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`/admin/menu/${selectedItem.id}`)}
+                  >
+                    Edit
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className={styles.detailEmpty}>
+                Select an item to view details.
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.itemGrid}>
@@ -145,66 +207,6 @@ export default function MenuManagement() {
                 </div>
               </div>
             ))
-          )}
-        </div>
-
-        <div className={styles.detailPanel}>
-          {selectedItem ? (
-            <>
-              <h2 className={styles.detailTitle}>{selectedItem.name}</h2>
-              <div className={styles.detailField}>
-                <span className={styles.detailLabel}>Category</span>
-                <span className={styles.detailValue}>
-                  {getCategoryName(selectedItem.categoryId)}
-                </span>
-              </div>
-              <div className={styles.detailField}>
-                <span className={styles.detailLabel}>Base Price</span>
-                <span className={styles.detailValue}>
-                  {'\u20B1'}{selectedItem.basePrice.toFixed(2)}
-                </span>
-              </div>
-              <div className={styles.detailField}>
-                <span className={styles.detailLabel}>Station</span>
-                <span className={styles.detailValue}>{selectedItem.station}</span>
-              </div>
-              <div className={styles.detailField}>
-                <span className={styles.detailLabel}>Available</span>
-                <span className={styles.detailValue}>
-                  {selectedItem.isAvailable ? 'Yes' : 'No'}
-                </span>
-              </div>
-              {selectedItem.description && (
-                <div className={styles.detailField}>
-                  <span className={styles.detailLabel}>Description</span>
-                  <span className={styles.detailValue}>
-                    {selectedItem.description}
-                  </span>
-                </div>
-              )}
-              {selectedItem.variants.length > 0 && (
-                <div className={styles.detailField}>
-                  <span className={styles.detailLabel}>Variants</span>
-                  {selectedItem.variants.map((v, i) => (
-                    <span key={i} className={styles.detailValue}>
-                      {v.name} (+{'\u20B1'}{v.priceAdd.toFixed(2)})
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className={styles.detailActions}>
-                <Button
-                  size="sm"
-                  onClick={() => navigate(`/admin/menu/${selectedItem.id}`)}
-                >
-                  Edit
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className={styles.emptyState}>
-              Select an item to view details.
-            </div>
           )}
         </div>
       </div>

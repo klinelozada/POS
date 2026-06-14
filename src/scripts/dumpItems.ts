@@ -23,6 +23,14 @@ async function main() {
     console.log(`${d.id} | ${data.name} | icon: ${data.icon} | order: ${data.displayOrder}`);
   });
 
+  console.log('');
+  const addOnSnap = await db.collection('addOnGroups').get();
+  console.log('=== ADD-ON GROUPS (' + addOnSnap.size + ') ===');
+  addOnSnap.docs.forEach(d => {
+    const data = d.data();
+    console.log(`${d.id} | ${data.name} | cats: ${JSON.stringify(data.applicableCategories)} | items: ${data.items?.length ?? 0}`);
+  });
+
   process.exit(0);
 }
 main().catch(e => { console.error(e); process.exit(1); });

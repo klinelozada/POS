@@ -25,6 +25,11 @@
   min-height: 0;
 }
 
+/* Desktop: leftColumn acts transparent, children become grid items in col 1 and col 3 */
+.leftColumn {
+  display: contents;
+}
+
 .categorySidebar {
   background-color: var(--color-surface-primary);
   border-radius: var(--radius-md);
@@ -91,6 +96,8 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   align-content: start;
+  /* On desktop, this is column 2 */
+  grid-column: 2;
 }
 
 .itemCard {
@@ -181,6 +188,7 @@
   transform: translateX(18px);
 }
 
+/* Desktop: detail panel is column 3 */
 .detailPanel {
   background-color: var(--color-surface-primary);
   border-radius: var(--radius-md);
@@ -190,6 +198,7 @@
   flex-direction: column;
   gap: 16px;
   align-self: start;
+  grid-column: 3;
 }
 
 .detailTitle {
@@ -217,6 +226,13 @@
   color: var(--color-foreground-primary);
 }
 
+.detailEmpty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--color-foreground-muted);
+  font-size: 13px;
+}
+
 .emptyState {
   text-align: center;
   padding: 48px 16px;
@@ -229,4 +245,67 @@
   display: flex;
   gap: 8px;
   margin-top: 8px;
+}
+
+/* Tablet: leftColumn becomes a real flex container, detail panel moves below sidebar */
+@media (max-width: 1024px) {
+  .page {
+    height: auto;
+    min-height: 100%;
+  }
+
+  .title { font-size: 20px; }
+
+  .content {
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    flex: none;
+    align-items: start;
+  }
+
+  .leftColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 160px);
+    min-height: 0;
+    align-self: start;
+  }
+
+  .categorySidebar {
+    flex: 0 1 auto;
+    overflow-y: auto;
+    max-height: none;
+    position: static;
+    min-height: 120px;
+  }
+
+  .detailPanel {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    grid-column: auto;
+    padding: 14px;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .detailTitle { font-size: 14px; }
+  .detailLabel { font-size: 10px; }
+  .detailValue { font-size: 12px; }
+  .detailEmpty { font-size: 11px; padding: 16px 8px; }
+  .detailActions button { font-size: 12px; }
+
+  .itemGrid {
+    grid-column: auto;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .itemCard { padding: 12px; }
+  .itemName { font-size: 13px; }
+  .itemPrice { font-size: 12px; }
+  .catItem { padding: 8px 10px; font-size: 12px; }
+  .categorySidebar { padding: 8px; }
 }

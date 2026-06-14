@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { getStoreStatus } from '../../services/storeService';
+import { ConfirmDialog } from '../../components';
 import styles from './ModeSelect.module.css';
 
 type StationMode = 'solo' | 'dual' | 'full-team';
 
 export default function ModeSelect() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [storeOpen, setStoreOpen] = useState<boolean | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     getStoreStatus().then((s) => setStoreOpen(s.isOpen));
@@ -24,6 +26,12 @@ export default function ModeSelect() {
     } else {
       navigate('/pos/station');
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    localStorage.removeItem('posLastRoute');
+    navigate('/pos/login', { replace: true });
   };
 
   return (
@@ -73,7 +81,22 @@ export default function ModeSelect() {
             <div className={styles.cardBadge}>5 Stations</div>
           </div>
         </div>
+        <button className={styles.logoutBtn} onClick={() => setShowLogoutConfirm(true)}>
+          <span className="material-symbols-rounded" style={{ fontSize: 18 }}>logout</span>
+          Logout
+        </button>
       </div>
+
+      {showLogoutConfirm && (
+        <ConfirmDialog
+          title="Confirm Logout"
+          message="Are you sure you want to logout?"
+          confirmLabel="Logout"
+          variant="danger"
+          onConfirm={handleLogout}
+          onCancel={() => setShowLogoutConfirm(false)}
+        />
+      )}
     </div>
   );
 }

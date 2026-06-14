@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import { AuthGuard } from '../../components/AuthGuard';
+import AdminLogin from './AdminLogin';
 import AdminLayout from './AdminLayout';
 import Dashboard from './Dashboard';
 import MenuManagement from './MenuManagement';
@@ -14,7 +16,14 @@ import Settings from './Settings';
 export default function AdminRoutes() {
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
+      <Route path="login" element={<AdminLogin />} />
+      <Route
+        element={
+          <AuthGuard redirectTo="/admin/login">
+            <AdminLayout />
+          </AuthGuard>
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="menu" element={<MenuManagement />} />
         <Route path="menu/new" element={<ItemEditor />} />

@@ -213,3 +213,8 @@
   font-family: monospace;
   letter-spacing: 2px;
 }
+
+@media (max-width: 1024px) {
+  .title { font-size: 20px; }
+  .table th, .table td { padding: 10px 12px; font-size: 12px; }
+}

@@ -36,6 +36,10 @@ android/app/build/
 android/.gradle/
 android/build/
 android/local.properties
+android-admin/app/build/
+android-admin/.gradle/
+android-admin/build/
+android-admin/local.properties
 
 # Claude
 .claude/settings.json

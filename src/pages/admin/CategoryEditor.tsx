@@ -5,6 +5,7 @@ import {
   createCategory,
   updateCategory,
   getMenuItems,
+  updateMenuItem,
 } from '../../services/menuService';
 import { uploadCategoryImage } from '../../services/storageService';
 import { Button } from '../../components/Button';
@@ -294,24 +295,38 @@ export default function CategoryEditor() {
                 <tr>
                   <th>Name</th>
                   <th>Price</th>
-                  <th>Available</th>
+                  <th>Visible</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {catItems.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} style={!item.isAvailable ? { opacity: 0.5 } : undefined}>
                     <td>{item.name}</td>
                     <td>{'\u20B1'}{item.basePrice.toFixed(2)}</td>
                     <td>
-                      <span
-                        className={
-                          item.isAvailable
-                            ? styles.statusActive
-                            : styles.statusInactive
-                        }
+                      <button
+                        className={item.isAvailable ? styles.statusActive : styles.statusInactive}
+                        onClick={async () => {
+                          await updateMenuItem(item.id, { isAvailable: !item.isAvailable });
+                          setCatItems((prev) =>
+                            prev.map((i) => i.id === item.id ? { ...i, isAvailable: !i.isAvailable } : i)
+                          );
+                          toast.success(item.isAvailable ? `${item.name} hidden from menu` : `${item.name} shown on menu`);
+                        }}
+                        style={{ cursor: 'pointer', border: 'none', background: 'none', padding: 0 }}
                       >
                         {item.isAvailable ? 'Yes' : 'No'}
-                      </span>
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.editItemBtn}
+                        onClick={() => navigate(`/admin/menu/${item.id}`)}
+                        title="Edit item"
+                      >
+                        <span className="material-symbols-rounded" style={{ fontSize: 16 }}>edit</span>
+                      </button>
                     </td>
                   </tr>
                 ))}

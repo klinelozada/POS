@@ -112,3 +112,23 @@
   background: var(--color-surface-secondary);
   color: var(--color-foreground-muted);
 }
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-danger);
+  background: none;
+  color: var(--color-danger);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.logoutBtn:hover {
+  background: rgba(220, 53, 69, 0.08);
+}

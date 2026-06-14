@@ -245,3 +245,11 @@
   color: var(--color-foreground-muted);
   font-weight: 500;
 }
+
+@media (max-width: 1024px) {
+  .title { font-size: 20px; }
+  .pill { padding: 5px 10px; font-size: 12px; }
+  .table th { padding: 8px 10px; font-size: 10px; }
+  .table td { padding: 8px 10px; font-size: 12px; }
+  .expandedContent { padding: 12px 16px; }
+}

@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { LoadingSpinner } from './components/LoadingSpinner';
-import { AuthGuard } from './components/AuthGuard';
 import { OfflineIndicator } from './components/OfflineIndicator';
 
 // Lazy-loaded route groups — each will be a module with its own sub-routes
@@ -28,8 +27,8 @@ function App() {
       />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/pos/login" replace />} />
+          {/* Default redirect — admin app sets window.__ADMIN_APP */}
+          <Route path="/" element={<Navigate to={(window as any).__ADMIN_APP ? '/admin/login' : '/pos/login'} replace />} />
 
           {/* Kiosk — in-store tablets, PIN-protected */}
           <Route path="/kiosk/*" element={<KioskRoutes />} />
@@ -46,15 +45,8 @@ function App() {
           {/* Kitchen station — PIN auth */}
           <Route path="/kitchen/*" element={<KitchenRoutes />} />
 
-          {/* Admin — full auth required */}
-          <Route
-            path="/admin/*"
-            element={
-              <AuthGuard redirectTo="/pos/login">
-                <AdminRoutes />
-              </AuthGuard>
-            }
-          />
+          {/* Admin — has its own login */}
+          <Route path="/admin/*" element={<AdminRoutes />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

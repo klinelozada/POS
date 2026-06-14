@@ -92,3 +92,11 @@
   color: var(--color-foreground-muted);
   font-size: 14px;
 }
+
+@media (max-width: 1024px) {
+  .title { font-size: 20px; }
+  .statsRow { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .statValue { font-size: 22px; }
+  .statCard { padding: 16px; }
+  .table th, .table td { padding: 10px 12px; font-size: 12px; }
+}

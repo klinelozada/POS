@@ -236,3 +236,15 @@
   display: flex;
   gap: 12px;
 }
+
+@media (max-width: 1024px) {
+  .page { max-width: 100%; gap: 16px; }
+  .title { font-size: 20px; }
+  .form { padding: 16px; gap: 16px; }
+  .row { grid-template-columns: 1fr; gap: 12px; }
+  .label { font-size: 12px; }
+  .input { padding: 8px 10px; font-size: 13px; }
+  .photoArea { width: 100px; height: 100px; }
+  .variantRow { grid-template-columns: 1fr 80px 32px; }
+  .sectionTitle { font-size: 14px; }
+}

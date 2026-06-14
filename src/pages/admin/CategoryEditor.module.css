@@ -224,9 +224,34 @@
   font-size: 13px;
 }
 
+.editItemBtn {
+  background: none;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 4px 6px;
+  color: var(--color-foreground-muted);
+  display: flex;
+  align-items: center;
+}
+
+.editItemBtn:hover {
+  color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+}
+
 .emptyItems {
   text-align: center;
   padding: 24px 16px;
   color: var(--color-foreground-muted);
   font-size: 13px;
+}
+
+@media (max-width: 1024px) {
+  .page { max-width: 100%; gap: 16px; }
+  .title { font-size: 20px; }
+  .form { padding: 16px; gap: 16px; }
+  .row { grid-template-columns: 1fr; gap: 12px; }
+  .input { padding: 8px 10px; font-size: 13px; }
+  .itemsTable th, .itemsTable td { padding: 8px 10px; font-size: 12px; }
 }

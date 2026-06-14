@@ -111,7 +111,7 @@ export default function MenuBrowse() {
   const displayCategory = currentSub ?? currentParent;
 
   const filteredItems = displayCategory
-    ? menuItems.filter((item) => item.categoryId === displayCategory.id)
+    ? menuItems.filter((item) => item.categoryId === displayCategory.id && item.isAvailable)
     : [];
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -166,6 +166,21 @@ export default function MenuBrowse() {
       {!showGrid && (
         <div className={styles.mobileCategoryBar}>
           <div className={styles.mobileCategoryScroll}>
+            {promos.length > 0 && (
+              <button
+                className={selectedParentId === '__promos' ? styles.mobileCatBtnActive : styles.mobileCatBtn}
+                onClick={() => handleCategorySelect('__promos')}
+              >
+                <div className={styles.mobileCatThumb}>
+                  {promos[0].poster ? (
+                    <img src={promos[0].poster} alt="Promos" />
+                  ) : (
+                    <span className="material-symbols-rounded" style={{ fontSize: 18 }}>local_offer</span>
+                  )}
+                </div>
+                <span className={styles.mobileCatLabel}>Promos</span>
+              </button>
+            )}
             {topLevel.map((cat) => {
               const img = getCatCardImage(cat);
               return (
@@ -243,16 +258,40 @@ export default function MenuBrowse() {
             {/* Sidebar — tablet only */}
             <div className={styles.sidebar}>
               <div className={styles.sidebarList}>
-                {topLevel.map((cat) => (
+                {promos.length > 0 && (
                   <button
-                    key={cat.id}
-                    className={currentParent?.id === cat.id ? styles.categoryBtnActive : styles.categoryBtn}
-                    onClick={() => handleCategorySelect(cat.id)}
+                    className={selectedParentId === '__promos' ? styles.categoryBtnActive : styles.categoryBtn}
+                    onClick={() => handleCategorySelect('__promos')}
                   >
-                    {renderCatIcon(cat.icon)}
-                    {cat.name}
+                    <div className={styles.sidebarThumb}>
+                      {promos[0].poster ? (
+                        <img src={promos[0].poster} alt="Promos" />
+                      ) : (
+                        <span className="material-symbols-rounded" style={{ fontSize: 20 }}>local_offer</span>
+                      )}
+                    </div>
+                    <span className={styles.sidebarLabel}>Promos</span>
                   </button>
-                ))}
+                )}
+                {topLevel.map((cat) => {
+                  const img = getCatCardImage(cat);
+                  return (
+                    <button
+                      key={cat.id}
+                      className={currentParent?.id === cat.id ? styles.categoryBtnActive : styles.categoryBtn}
+                      onClick={() => handleCategorySelect(cat.id)}
+                    >
+                      <div className={styles.sidebarThumb}>
+                        {img ? (
+                          <img src={img} alt={cat.name} />
+                        ) : (
+                          renderCatIcon(cat.icon, 20)
+                        )}
+                      </div>
+                      <span className={styles.sidebarLabel}>{cat.name}</span>
+                    </button>
+                  );
+                })}
               </div>
               {cartCount > 0 && (
                 <button className={styles.sidebarCart} onClick={() => navigate(`${base}/cart`)}>
@@ -340,8 +379,8 @@ export default function MenuBrowse() {
                         return (
                           <div
                             key={item.id}
-                            className={`${styles.itemCard} ${!item.isAvailable ? styles.unavailable : ''}`}
-                            onClick={() => item.isAvailable && navigate(`${base}/menu/${item.id}`)}
+                            className={styles.itemCard}
+                            onClick={() => navigate(`${base}/menu/${item.id}`)}
                           >
                             <div className={styles.itemPhoto}>
                               {(item.photo || getMenuItemImage(item.name) || getCategoryImage(catName)) ? (

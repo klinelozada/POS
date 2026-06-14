@@ -103,6 +103,14 @@
   overflow: hidden;
 }
 
+.sectionPane25 {
+  flex: 1 1 25%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .sectionPaneCollapsed {
   flex: 0 0 auto;
   display: flex;
@@ -128,6 +136,7 @@
 
 .sectionHeaderPay { composes: sectionHeader; color: var(--color-success); }
 .sectionHeaderPrep { composes: sectionHeader; color: var(--color-accent-primary); }
+.sectionHeaderKitchen { composes: sectionHeader; color: #e65100; }
 .sectionHeaderDone { composes: sectionHeader; color: var(--color-foreground-muted); cursor: pointer; }
 
 .dividerOrange { height: 2px; background: var(--color-accent-primary); margin: 0 12px; }
