@@ -96,8 +96,11 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   align-content: start;
-  /* On desktop, this is column 2 */
+  /* On desktop, this is column 2, row 1 — pin the row so auto-placement
+     doesn't bump it below the col-3 detail panel (which created a top gap) */
   grid-column: 2;
+  grid-row: 1;
+  align-self: start;
 }
 
 .itemCard {
@@ -299,6 +302,7 @@
 
   .itemGrid {
     grid-column: auto;
+    grid-row: auto;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
   }
