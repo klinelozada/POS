@@ -4,6 +4,7 @@ import { useMenu } from '../../hooks/useMenu';
 import { deleteCategory } from '../../services/menuService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import FilterMenu, { type FilterGroup } from '../../components/FilterMenu';
 import styles from './Categories.module.css';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,33 @@ export default function Categories() {
   const { categories, menuItems, loading, refresh } = useMenu();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [stationFilter, setStationFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const filterGroups: FilterGroup[] = [
+    {
+      key: 'station',
+      label: 'Station',
+      value: stationFilter,
+      onChange: setStationFilter,
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'prep', label: 'Prep' },
+        { value: 'kitchen', label: 'Kitchen' },
+      ],
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      value: statusFilter,
+      onChange: setStatusFilter,
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ],
+    },
+  ];
 
   // Build hierarchical list: parents with their children indented below
   const orderedCategories = useMemo(() => {
@@ -49,9 +77,13 @@ export default function Categories() {
   if (loading) return <LoadingSpinner />;
 
   const q = search.trim().toLowerCase();
-  const visibleCategories = q
-    ? orderedCategories.filter(({ cat }) => cat.name.toLowerCase().includes(q))
-    : orderedCategories;
+  const visibleCategories = orderedCategories.filter(({ cat }) => {
+    if (q && !cat.name.toLowerCase().includes(q)) return false;
+    if (stationFilter !== 'all' && cat.defaultStation !== stationFilter) return false;
+    if (statusFilter === 'active' && !cat.isActive) return false;
+    if (statusFilter === 'inactive' && cat.isActive) return false;
+    return true;
+  });
 
   const getItemCount = (catId: string) =>
     menuItems.filter((item) => item.categoryId === catId).length;
@@ -74,26 +106,28 @@ export default function Categories() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Categories</h1>
-          <div className={styles.searchBox}>
-            <span className="material-symbols-rounded" style={{ fontSize: 18, color: 'var(--color-foreground-muted)' }}>search</span>
-            <input
-              className={styles.searchInput}
-              placeholder="Search categories..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Clear search">
-                <span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span>
-              </button>
-            )}
-          </div>
-        </div>
+        <h1 className={styles.title}>Categories</h1>
         <Button onClick={() => navigate('/admin/categories/new')}>
           + Add Category
         </Button>
+      </div>
+
+      <div className={styles.searchRow}>
+        <div className={styles.searchBox}>
+          <span className="material-symbols-rounded" style={{ fontSize: 20, color: 'var(--color-foreground-muted)' }}>search</span>
+          <input
+            className={styles.searchInput}
+            placeholder="Search categories..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Clear search">
+              <span className="material-symbols-rounded" style={{ fontSize: 18 }}>close</span>
+            </button>
+          )}
+        </div>
+        <FilterMenu groups={filterGroups} />
       </div>
 
       {categories.length === 0 ? (

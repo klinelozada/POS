@@ -4,6 +4,7 @@ import { useMenu } from '../../hooks/useMenu';
 import { updateMenuItem } from '../../services/menuService';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import FilterMenu, { type FilterGroup } from '../../components/FilterMenu';
 import { getMenuItemImage } from '../../utils/menuImages';
 import type { MenuItem } from '../../types';
 import styles from './MenuManagement.module.css';
@@ -13,7 +14,46 @@ export default function MenuManagement() {
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [search, setSearch] = useState('');
+  const [stationFilter, setStationFilter] = useState('all');
+  const [availFilter, setAvailFilter] = useState('all');
+  const [diagramFilter, setDiagramFilter] = useState('all');
   const navigate = useNavigate();
+
+  const filterGroups: FilterGroup[] = [
+    {
+      key: 'station',
+      label: 'Station',
+      value: stationFilter,
+      onChange: setStationFilter,
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'prep', label: 'Prep' },
+        { value: 'kitchen', label: 'Kitchen' },
+      ],
+    },
+    {
+      key: 'avail',
+      label: 'Availability',
+      value: availFilter,
+      onChange: setAvailFilter,
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'available', label: 'Available' },
+        { value: 'unavailable', label: 'Unavailable' },
+      ],
+    },
+    {
+      key: 'diagram',
+      label: 'Build Diagram',
+      value: diagramFilter,
+      onChange: setDiagramFilter,
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'has', label: 'Has diagram' },
+        { value: 'none', label: 'No diagram' },
+      ],
+    },
+  ];
 
   // Build parent-child sidebar structure
   const { sidebarItems } = useMemo(() => {
@@ -60,12 +100,16 @@ export default function MenuManagement() {
   };
 
   const q = search.trim().toLowerCase();
-  const filteredItems = getFilteredItems().filter(
-    (item) =>
-      !q ||
-      item.name.toLowerCase().includes(q) ||
-      (item.description ?? '').toLowerCase().includes(q)
-  );
+  const filteredItems = getFilteredItems().filter((item) => {
+    if (q && !item.name.toLowerCase().includes(q) && !(item.description ?? '').toLowerCase().includes(q)) return false;
+    if (stationFilter !== 'all' && item.station !== stationFilter) return false;
+    if (availFilter === 'available' && !item.isAvailable) return false;
+    if (availFilter === 'unavailable' && item.isAvailable) return false;
+    const hasDiagram = !!item.buildDiagram?.layers?.length;
+    if (diagramFilter === 'has' && !hasDiagram) return false;
+    if (diagramFilter === 'none' && hasDiagram) return false;
+    return true;
+  });
 
   const getCategoryName = (catId: string) => {
     const cat = categories.find((c) => c.id === catId);
@@ -86,27 +130,29 @@ export default function MenuManagement() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Menu Management</h1>
+        <h1 className={styles.title}>Menu Management</h1>
+        <Button onClick={() => navigate('/admin/menu/new')}>+ Add Item</Button>
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.searchRow}>
           <div className={styles.searchBox}>
-            <span className="material-symbols-rounded" style={{ fontSize: 18, color: 'var(--color-foreground-muted)' }}>search</span>
+            <span className="material-symbols-rounded" style={{ fontSize: 20, color: 'var(--color-foreground-muted)' }}>search</span>
             <input
               className={styles.searchInput}
-              placeholder="Search items..."
+              placeholder="Search menu items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             {search && (
               <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Clear search">
-                <span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span>
+                <span className="material-symbols-rounded" style={{ fontSize: 18 }}>close</span>
               </button>
             )}
           </div>
+          <FilterMenu groups={filterGroups} />
         </div>
-        <Button onClick={() => navigate('/admin/menu/new')}>+ Add Item</Button>
-      </div>
 
-      <div className={styles.content}>
         <div className={styles.leftColumn}>
           <div className={styles.categorySidebar}>
             <button

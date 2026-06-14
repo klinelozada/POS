@@ -16,24 +16,23 @@
   color: var(--color-foreground-primary);
 }
 
-.headerLeft {
+.searchRow {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1;
-  min-width: 0;
+  gap: 12px;
 }
 
 .searchBox {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 10px;
+  padding: 0 16px;
+  height: 44px;
+  flex: 1;
+  min-width: 0;
   background: var(--color-surface-primary);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  width: 280px;
-  max-width: 100%;
   box-shadow: var(--shadow-sm);
 }
 
@@ -41,7 +40,7 @@
   border: none;
   background: none;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-foreground-primary);
   width: 100%;
   font-family: var(--font-primary);
