@@ -13,6 +13,10 @@
       }
     ]
   },
+  "firestore": {
+    "rules": "firestore.rules",
+    "database": "joes-pos"
+  },
   "storage": {
     "rules": "storage.rules"
   }
