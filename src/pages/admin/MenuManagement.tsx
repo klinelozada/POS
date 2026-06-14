@@ -12,6 +12,7 @@ export default function MenuManagement() {
   const { categories, menuItems, loading, refresh } = useMenu();
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   // Build parent-child sidebar structure
@@ -58,7 +59,13 @@ export default function MenuManagement() {
     return menuItems.filter((item) => item.categoryId === selectedCatId);
   };
 
-  const filteredItems = getFilteredItems();
+  const q = search.trim().toLowerCase();
+  const filteredItems = getFilteredItems().filter(
+    (item) =>
+      !q ||
+      item.name.toLowerCase().includes(q) ||
+      (item.description ?? '').toLowerCase().includes(q)
+  );
 
   const getCategoryName = (catId: string) => {
     const cat = categories.find((c) => c.id === catId);
@@ -79,7 +86,23 @@ export default function MenuManagement() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Menu Management</h1>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Menu Management</h1>
+          <div className={styles.searchBox}>
+            <span className="material-symbols-rounded" style={{ fontSize: 18, color: 'var(--color-foreground-muted)' }}>search</span>
+            <input
+              className={styles.searchInput}
+              placeholder="Search items..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Clear search">
+                <span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span>
+              </button>
+            )}
+          </div>
+        </div>
         <Button onClick={() => navigate('/admin/menu/new')}>+ Add Item</Button>
       </div>
 

@@ -61,19 +61,33 @@ export default function Orders() {
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
 
   const filteredOrders = useMemo(() => {
     const { from, to } = getDateRange(datePreset, customFrom, customTo);
+    const q = search.trim().toLowerCase();
     return orders.filter((order) => {
       if (statusFilter !== 'all' && order.status !== statusFilter) return false;
       if (paymentFilter !== 'all' && order.paymentMethod !== paymentFilter) return false;
       const orderDate = order.createdAt?.toDate?.();
       if (!orderDate) return false;
       if (orderDate < from || orderDate > to) return false;
+      if (q) {
+        const haystack = [
+          String(order.orderNumber),
+          order.referenceNumber ?? '',
+          order.paymentMethod ?? '',
+          order.type,
+          ...(order.items?.map((i) => i.name) ?? []),
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
       return true;
     });
-  }, [orders, statusFilter, paymentFilter, datePreset, customFrom, customTo]);
+  }, [orders, statusFilter, paymentFilter, datePreset, customFrom, customTo, search]);
 
   // Pagination on flat list
   const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
@@ -153,6 +167,20 @@ export default function Orders() {
       <div className={styles.headerRow}>
         <h1 className={styles.title}>Orders</h1>
         <span className={styles.orderCount}>{filteredOrders.length} orders</span>
+        <div className={styles.searchBox}>
+          <span className="material-symbols-rounded" style={{ fontSize: 18, color: 'var(--color-foreground-muted)' }}>search</span>
+          <input
+            className={styles.searchInput}
+            placeholder="Search order #, item, ref…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          />
+          {search && (
+            <button className={styles.searchClear} onClick={() => { setSearch(''); setPage(0); }} aria-label="Clear search">
+              <span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.filters}>

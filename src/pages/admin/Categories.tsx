@@ -1,4 +1,4 @@
-import { useMemo, type MouseEvent } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMenu } from '../../hooks/useMenu';
 import { deleteCategory } from '../../services/menuService';
@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 export default function Categories() {
   const { categories, menuItems, loading, refresh } = useMenu();
   const navigate = useNavigate();
+  const [search, setSearch] = useState('');
 
   // Build hierarchical list: parents with their children indented below
   const orderedCategories = useMemo(() => {
@@ -47,6 +48,11 @@ export default function Categories() {
 
   if (loading) return <LoadingSpinner />;
 
+  const q = search.trim().toLowerCase();
+  const visibleCategories = q
+    ? orderedCategories.filter(({ cat }) => cat.name.toLowerCase().includes(q))
+    : orderedCategories;
+
   const getItemCount = (catId: string) =>
     menuItems.filter((item) => item.categoryId === catId).length;
 
@@ -68,7 +74,23 @@ export default function Categories() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Categories</h1>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Categories</h1>
+          <div className={styles.searchBox}>
+            <span className="material-symbols-rounded" style={{ fontSize: 18, color: 'var(--color-foreground-muted)' }}>search</span>
+            <input
+              className={styles.searchInput}
+              placeholder="Search categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Clear search">
+                <span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span>
+              </button>
+            )}
+          </div>
+        </div>
         <Button onClick={() => navigate('/admin/categories/new')}>
           + Add Category
         </Button>
@@ -76,6 +98,8 @@ export default function Categories() {
 
       {categories.length === 0 ? (
         <div className={styles.emptyState}>No categories yet.</div>
+      ) : visibleCategories.length === 0 ? (
+        <div className={styles.emptyState}>No categories match "{search}".</div>
       ) : (
         <table className={styles.table}>
           <thead>
@@ -90,7 +114,7 @@ export default function Categories() {
             </tr>
           </thead>
           <tbody>
-            {orderedCategories.map(({ cat, depth }, index) => (
+            {visibleCategories.map(({ cat, depth }, index) => (
               <tr
                 key={cat.id}
                 onClick={() => navigate(`/admin/categories/${cat.id}`)}
