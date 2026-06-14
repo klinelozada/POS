@@ -7,6 +7,7 @@ import { useStoreStatus } from '../../hooks/useStoreStatus';
 import { updateOrder, updateOrderItemStatus } from '../../services/orderService';
 import { getUserRole, getSettings } from '../../services/adminService';
 import { getMenuItemImage } from '../../utils/menuImages';
+import BuildDiagram from '../../components/BuildDiagram';
 import { ConfirmDialog, PinDialog } from '../../components';
 import type { Order, OrderItem, PaymentMethod, MenuItem, UserRole } from '../../types';
 import styles from './SoloCounter.module.css';
@@ -222,6 +223,10 @@ export default function SoloCounter() {
   const focusedItem = selectedOrder && selectedItemIndex !== null
     ? selectedOrder.items[selectedItemIndex]
     : null;
+
+  // Build-diagram overlay in the prep panel (shown on top of the item photo)
+  const focusedMenuItem = focusedItem ? menuItems.find((mi) => mi.id === focusedItem.menuItemId) ?? null : null;
+  const hasFocusedDiagram = !!focusedMenuItem?.buildDiagram?.layers?.length;
 
   const handleSelectPrepOrder = (order: Order) => {
     setSelectedOrderId(order.id);
@@ -604,6 +609,11 @@ export default function SoloCounter() {
                   <img src={getMenuItemImage(focusedItem.name)} alt={focusedItem.name} className={styles.photoImg} />
                 ) : (
                   <div className={styles.photoFallback}>{'\u2615'}</div>
+                )}
+                {hasFocusedDiagram && focusedMenuItem?.buildDiagram && (
+                  <div className={styles.buildOverlay}>
+                    <BuildDiagram diagram={focusedMenuItem.buildDiagram} />
+                  </div>
                 )}
               </div>
               <div className={styles.midChecklist}>

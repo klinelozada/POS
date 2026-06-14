@@ -3,6 +3,7 @@ import { useOrders } from '../../hooks/useOrders';
 import { useMenu } from '../../hooks/useMenu';
 import { updateOrderItemStatus } from '../../services/orderService';
 import { getMenuItemImage } from '../../utils/menuImages';
+import BuildDiagram from '../../components/BuildDiagram';
 import type { StationType } from '../../types';
 import styles from './StationCounter.module.css';
 
@@ -41,6 +42,13 @@ export default function StationCounter({ station, stationLabel }: StationCounter
   }, [selectedOrder, station]);
 
   const selectedItem = selectedItemIndex !== null ? stationItems.find((i) => i.originalIndex === selectedItemIndex) : null;
+
+  // Resolve the full menu item (for prep instructions + build diagram)
+  const selectedMenuItem = useMemo(
+    () => (selectedItem ? menuItems.find((mi) => mi.id === selectedItem.menuItemId) ?? null : null),
+    [selectedItem, menuItems]
+  );
+  const hasDiagram = !!selectedMenuItem?.buildDiagram?.layers?.length;
 
   // Auto-deselect when selected order has no more pending items for this station
   useEffect(() => {
@@ -120,8 +128,13 @@ export default function StationCounter({ station, stationLabel }: StationCounter
           <>
             <div className={styles.photoPlaceholder}>
               {selectedItem && getMenuItemImage(selectedItem.name) ? (
-                <img src={getMenuItemImage(selectedItem.name)} alt={selectedItem.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '12px' }} />
+                <img src={getMenuItemImage(selectedItem.name)} alt={selectedItem.name} style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'left center', padding: '12px' }} />
               ) : '\u2615'}
+              {hasDiagram && selectedMenuItem?.buildDiagram && (
+                <div className={styles.buildOverlay}>
+                  <BuildDiagram diagram={selectedMenuItem.buildDiagram} />
+                </div>
+              )}
             </div>
             <div className={styles.orderItemsList}>
               {stationItems.map((item) => (

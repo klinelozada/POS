@@ -11,7 +11,8 @@ import { getMenuItemImage } from '../../utils/menuImages';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { RichTextEditor } from '../../components/RichTextEditor';
-import type { Category, MenuItemVariant, VariantGroup, StationType } from '../../types';
+import BuildDiagramEditor from '../../components/BuildDiagramEditor';
+import type { Category, MenuItemVariant, VariantGroup, StationType, BuildDiagram } from '../../types';
 import styles from './ItemEditor.module.css';
 import toast from 'react-hot-toast';
 
@@ -36,6 +37,7 @@ export default function ItemEditor() {
   const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
   const [priceMatrix, setPriceMatrix] = useState<Record<string, number>>({});
   const [prepInstructions, setPrepInstructions] = useState('');
+  const [buildDiagram, setBuildDiagram] = useState<BuildDiagram | null>(null);
   const [station, setStation] = useState<StationType>('prep');
   const [isAvailable, setIsAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -60,6 +62,7 @@ export default function ItemEditor() {
             setPriceMatrix(item.priceMatrix);
           }
           setPrepInstructions(item.prepInstructions ?? '');
+          setBuildDiagram(item.buildDiagram ?? null);
           setStation(item.station);
           setIsAvailable(item.isAvailable);
         }
@@ -118,6 +121,7 @@ export default function ItemEditor() {
         isAvailable,
         ...(description.trim() ? { description: description.trim() } : {}),
         ...(prepInstructions.trim() ? { prepInstructions: prepInstructions.trim() } : {}),
+        buildDiagram: buildDiagram && buildDiagram.layers.length > 0 ? buildDiagram : null,
         ...(photo ? { photo } : {}),
         ...(useVariantGroups && variantGroups.length > 0
           ? { variantGroups, priceMatrix }
@@ -468,6 +472,11 @@ export default function ItemEditor() {
             content={prepInstructions}
             onChange={setPrepInstructions}
           />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Build Diagram</label>
+          <BuildDiagramEditor value={buildDiagram} onChange={setBuildDiagram} />
         </div>
 
         <div className={styles.toggleRow}>

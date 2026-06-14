@@ -38,6 +38,24 @@ export interface VariantGroup {
   options: string[];
 }
 
+export type BuildDiagramStyle = 'cup' | 'tapered';
+
+export interface BuildLayer {
+  label: string;
+  color: string; // hex color for the band
+  size?: number; // relative band height (default 1)
+  dots?: boolean; // draw "nata pearl" dots across the band
+}
+
+// Visual layered-cup build guide shown in the prep/kitchen station.
+// Mirrors the official Joe Street "Visual Staff Build Guide" diagrams.
+export interface BuildDiagram {
+  style: BuildDiagramStyle; // 'cup' = straight cup, 'tapered' = fizz-style cup with side callouts
+  layers: BuildLayer[]; // ordered top → bottom
+  hot?: boolean; // draws steam lines (cup style only)
+  notes?: string[]; // short bullet reminders (e.g. "Do not fully stir")
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -51,6 +69,7 @@ export interface MenuItem {
   isAvailable: boolean;
   station: StationType;
   prepInstructions?: string; // HTML rich text
+  buildDiagram?: BuildDiagram; // visual layered-cup build guide
 }
 
 export interface AddOnItem {
