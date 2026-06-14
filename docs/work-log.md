@@ -1,5 +1,35 @@
 # Work Log
 
+## Session 4 - 2026-06-14
+
+Migrated the project to a new (Mac) machine and worked on the `workspace` branch.
+
+### Infrastructure / fixes
+- Cloned repo, verified build, wired personal git + `gh` account (klinelozada).
+- Diagnosed "menus disappeared" = Firestore `permission-denied` on the **named
+  database `joes-pos`** (test-mode rules expired). `menuService.getMenuItems`
+  swallows the error → empty UI. Fixed by `firestore.rules` (public read for
+  menu/categories/promos/settings) wired into `firebase.json` targeting
+  `joes-pos`, then deployed.
+- Installed Firebase CLI on this machine and deployed hosting
+  (`firebase deploy --only hosting`). Live: https://brandserps-demo.web.app.
+
+### Features
+- **Visual build diagrams** for Prep / Kitchen / Solo stations + admin editor +
+  seed of 34 diagrams and missing recipes. See `docs/build-diagrams.md`.
+- **Admin search / filter / sort** on Menu & Categories (+ search on Orders).
+  See `docs/admin-search-filter-sort.md`.
+- Fixed Menu Management top-gap (grid auto-placement bumped the item grid to
+  row 2).
+
+### Known follow-ups
+- 7 source-less drinks need recipes/diagrams (Soy, Mango Coffee Shake, Berry
+  Cloud, Citrus Cloud, Mango Cloud Classic, Passion Citrus Punch, Tropical Sunset).
+- Add French Vanilla Latte & Spanish Latte as menu items (diagram data ready).
+- Food `prepInstructions` are DRAFTs — owner to verify.
+- `npm run deploy` uses `npx firebase` which resolves to the SDK, not the CLI —
+  use `firebase deploy --only hosting` directly until fixed.
+
 ## Session 3 - 2026-05-11
 
 ### Completed
