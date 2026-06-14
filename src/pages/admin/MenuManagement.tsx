@@ -17,6 +17,7 @@ export default function MenuManagement() {
   const [stationFilter, setStationFilter] = useState('all');
   const [availFilter, setAvailFilter] = useState('all');
   const [diagramFilter, setDiagramFilter] = useState('all');
+  const [sort, setSort] = useState('default');
   const navigate = useNavigate();
 
   const filterGroups: FilterGroup[] = [
@@ -111,6 +112,14 @@ export default function MenuManagement() {
     return true;
   });
 
+  const sortedItems = [...filteredItems];
+  switch (sort) {
+    case 'name-asc': sortedItems.sort((a, b) => a.name.localeCompare(b.name)); break;
+    case 'name-desc': sortedItems.sort((a, b) => b.name.localeCompare(a.name)); break;
+    case 'price-asc': sortedItems.sort((a, b) => a.basePrice - b.basePrice); break;
+    case 'price-desc': sortedItems.sort((a, b) => b.basePrice - a.basePrice); break;
+  }
+
   const getCategoryName = (catId: string) => {
     const cat = categories.find((c) => c.id === catId);
     if (!cat) return 'Unknown';
@@ -150,6 +159,13 @@ export default function MenuManagement() {
               </button>
             )}
           </div>
+          <select className={styles.sortSelect} value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="default">Sort: Default</option>
+            <option value="name-asc">Name (A–Z)</option>
+            <option value="name-desc">Name (Z–A)</option>
+            <option value="price-asc">Price (Low–High)</option>
+            <option value="price-desc">Price (High–Low)</option>
+          </select>
           <FilterMenu groups={filterGroups} />
         </div>
 
@@ -244,10 +260,10 @@ export default function MenuManagement() {
         </div>
 
         <div className={styles.itemGrid}>
-          {filteredItems.length === 0 ? (
+          {sortedItems.length === 0 ? (
             <div className={styles.emptyState}>No menu items found.</div>
           ) : (
-            filteredItems.map((item) => (
+            sortedItems.map((item) => (
               <div
                 key={item.id}
                 className={`${styles.itemCard} ${selectedItem?.id === item.id ? styles.itemCardSelected : ''}`}
